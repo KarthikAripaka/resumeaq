@@ -67,6 +67,14 @@ final routerProvider = Provider<GoRouter>((ref) {
             builder: (context, state) => const InterviewScreen(),
           ),
           GoRoute(
+            path: '/feedback',
+            builder: (context, state) => const ResultsScreen(),
+          ),
+          GoRoute(
+            path: '/plan',
+            builder: (context, state) => const ResultsScreen(),
+          ),
+          GoRoute(
             path: '/results',
             builder: (context, state) => const ResultsScreen(),
           ),
@@ -98,11 +106,14 @@ class MainShell extends StatelessWidget {
         items: const [
           BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Home'),
           BottomNavigationBarItem(icon: Icon(Icons.upload), label: 'Upload'),
-          BottomNavigationBarItem(icon: Icon(Icons.analytics), label: 'Analysis'),
+          BottomNavigationBarItem(
+              icon: Icon(Icons.analytics), label: 'Analysis'),
           BottomNavigationBarItem(icon: Icon(Icons.chat), label: 'Interview'),
           BottomNavigationBarItem(icon: Icon(Icons.feedback), label: 'Results'),
-          BottomNavigationBarItem(icon: Icon(Icons.bar_chart), label: 'Analytics'),
-          BottomNavigationBarItem(icon: Icon(Icons.settings), label: 'Settings'),
+          BottomNavigationBarItem(
+              icon: Icon(Icons.bar_chart), label: 'Analytics'),
+          BottomNavigationBarItem(
+              icon: Icon(Icons.settings), label: 'Settings'),
         ],
         onTap: (index) {
           switch (index) {

@@ -30,7 +30,8 @@ class GroqService {
     while (retryCount < maxRetries) {
       try {
         if (kDebugMode) {
-          debugPrint('Groq Request (attempt ${retryCount + 1}): ${prompt.substring(0, 200)}...');
+          debugPrint(
+              'Groq Request (attempt ${retryCount + 1}): ${prompt.substring(0, 200)}...');
         }
 
         final response = await _dio.post(
@@ -57,14 +58,16 @@ class GroqService {
           debugPrint('Groq Response: ${response.data}');
         }
 
-        final content = response.data['choices'][0]['message']['content'] as String;
+        final content =
+            response.data['choices'][0]['message']['content'] as String;
         return content;
       } on DioException catch (e) {
         final statusCode = e.response?.statusCode;
         final responseBody = e.response?.data?.toString() ?? 'No response body';
         final requestUrl = e.requestOptions.uri.toString();
 
-        debugPrint('DioException: Status $statusCode, URL: $requestUrl, Body: $responseBody');
+        debugPrint(
+            'DioException: Status $statusCode, URL: $requestUrl, Body: $responseBody');
 
         if (statusCode == 429) {
           debugPrint('Rate limit hit, retrying in ${delay.inSeconds}s...');
@@ -74,11 +77,14 @@ class GroqService {
             delay = Duration(seconds: delay.inSeconds * 2);
             continue;
           } else {
-            throw Exception('Rate limit exceeded. Please wait before trying again.');
+            throw Exception(
+                'Rate limit exceeded. Please wait before trying again.');
           }
         } else if (statusCode == 401) {
           throw Exception('Invalid API key. Please check your Groq API key.');
-        } else if (statusCode == 500 || statusCode == 502 || statusCode == 503) {
+        } else if (statusCode == 500 ||
+            statusCode == 502 ||
+            statusCode == 503) {
           debugPrint('Server error, retrying...');
           retryCount++;
           if (retryCount < maxRetries) {
@@ -94,7 +100,8 @@ class GroqService {
     throw Exception('Max retries exceeded');
   }
 
-  Future<ResumeAnalysis> analyzeResume(String resumeText, String jobRole) async {
+  Future<ResumeAnalysis> analyzeResume(
+      String resumeText, String jobRole) async {
     // Check cache first
     final cachedAnalysis = await AICache.getCachedAnalysis(resumeText, jobRole);
     if (cachedAnalysis != null) {
@@ -135,7 +142,7 @@ $trimmedResume
 
     try {
       final response = await _sendRequest(prompt);
-      final analysis = AIResponseParser.parseResumeAnalysis(response, jobRole);
+      final analysis = AIResponseParser.parseResumeAnalysis(response, jobRole, trimmedResume);
 
       // Cache the successful analysis
       await AICache.cacheAnalysis(resumeText, jobRole, analysis);
@@ -143,8 +150,11 @@ $trimmedResume
       return analysis;
     } catch (e) {
       debugPrint('AI analysis failed, using fallback: $e');
-      // Return fallback analysis that never fails
-      final fallbackAnalysis = AIResponseParser.parseResumeAnalysis('', jobRole);
+
+      // Produce a meaningful, role-aware analysis (NO generic error chips).
+      // Use resume text for contextual fallback insights.
+      final fallbackAnalysis =
+          AIResponseParser.parseResumeAnalysis('', jobRole, trimmedResume);
       await AICache.cacheAnalysis(resumeText, jobRole, fallbackAnalysis);
       return fallbackAnalysis;
     }

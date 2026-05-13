@@ -8,35 +8,35 @@ part of 'resume_analysis.dart';
 
 ResumeAnalysis _$ResumeAnalysisFromJson(Map<String, dynamic> json) =>
     ResumeAnalysis(
-      atsScore: (json['atsScore'] as num).toInt(),
+      atsScore: (json['ats_score'] as num).toInt(),
       strengths:
           (json['strengths'] as List<dynamic>).map((e) => e as String).toList(),
       weaknesses: (json['weaknesses'] as List<dynamic>)
           .map((e) => e as String)
           .toList(),
-      missingSkills: (json['missingSkills'] as List<dynamic>)
+      missingSkills: (json['missing_skills'] as List<dynamic>)
           .map((e) => e as String)
           .toList(),
-      keywordMatch: (json['keywordMatch'] as List<dynamic>)
+      keywordMatch: (json['keyword_match'] as List<dynamic>)
           .map((e) => e as String)
           .toList(),
-      improvementTips: (json['improvementTips'] as List<dynamic>)
+      improvementTips: (json['improvement_tips'] as List<dynamic>)
           .map((e) => e as String)
           .toList(),
       summary: json['summary'] as String,
-      jobRole: json['jobRole'] as String,
-      analyzedAt: DateTime.parse(json['analyzedAt'] as String),
+      jobRole: json['job_role'] as String,
+      analyzedAt: DateTime.parse(json['analyzed_at'] as String),
     );
 
 Map<String, dynamic> _$ResumeAnalysisToJson(ResumeAnalysis instance) =>
     <String, dynamic>{
-      'atsScore': instance.atsScore,
+      'ats_score': instance.atsScore,
       'strengths': instance.strengths,
       'weaknesses': instance.weaknesses,
-      'missingSkills': instance.missingSkills,
-      'keywordMatch': instance.keywordMatch,
-      'improvementTips': instance.improvementTips,
+      'missing_skills': instance.missingSkills,
+      'keyword_match': instance.keywordMatch,
+      'improvement_tips': instance.improvementTips,
       'summary': instance.summary,
-      'jobRole': instance.jobRole,
-      'analyzedAt': instance.analyzedAt.toIso8601String(),
+      'job_role': instance.jobRole,
+      'analyzed_at': instance.analyzedAt.toIso8601String(),
     };

@@ -12,9 +12,7 @@ class InterviewNotifier extends _$InterviewNotifier {
   String? _jobRole;
 
   @override
-  FutureOr<InterviewSession?> build() {
-    return null;
-  }
+  FutureOr<InterviewSession?> build() => null;
 
   String _getUserFriendlyErrorMessage(Object error) {
     final errorString = error.toString().toLowerCase();
@@ -23,9 +21,11 @@ class InterviewNotifier extends _$InterviewNotifier {
       return 'AI service is busy. Please wait a moment and try again.';
     } else if (errorString.contains('timeout')) {
       return 'Request timed out. Please check your connection and try again.';
-    } else if (errorString.contains('network') || errorString.contains('connection')) {
+    } else if (errorString.contains('network') ||
+        errorString.contains('connection')) {
       return 'Network error. Please check your internet connection.';
-    } else if (errorString.contains('api key') || errorString.contains('unauthorized')) {
+    } else if (errorString.contains('api key') ||
+        errorString.contains('unauthorized')) {
       return 'Service configuration error. Please contact support.';
     } else {
       return 'Question generation temporarily unavailable. Using default questions.';
@@ -33,7 +33,7 @@ class InterviewNotifier extends _$InterviewNotifier {
   }
 
   Future<void> generateQuestions(ResumeAnalysis analysis) async {
-    _jobRole = analysis.jobRole; // Store job role for later use
+    _jobRole = analysis.jobRole;
     state = const AsyncValue.loading();
 
     try {
@@ -46,7 +46,6 @@ class InterviewNotifier extends _$InterviewNotifier {
 
       state = AsyncValue.data(session);
     } catch (error, stackTrace) {
-      // Create a user-friendly error message
       final userFriendlyError = _getUserFriendlyErrorMessage(error);
       state = AsyncValue.error(userFriendlyError, stackTrace);
     }
@@ -59,7 +58,7 @@ class InterviewNotifier extends _$InterviewNotifier {
       analysis.jobRole,
     );
 
-    final session = InterviewSession(
+    return InterviewSession(
       id: const Uuid().v4(),
       resumeId: 'local_${DateTime.now().millisecondsSinceEpoch}',
       jobRole: analysis.jobRole,
@@ -67,8 +66,6 @@ class InterviewNotifier extends _$InterviewNotifier {
       feedbacks: {},
       startedAt: DateTime.now(),
     );
-
-    return session;
   }
 
   Future<void> submitAnswer(String questionId, String answer) async {
@@ -77,79 +74,19 @@ class InterviewNotifier extends _$InterviewNotifier {
 
     state = await AsyncValue.guard(() async {
       final groqService = ref.read(groqServiceProvider);
-      final feedback = await groqService.evaluateAnswer(
-        currentSession.questions.firstWhere((q) => q.id == questionId).question,
-        answer,
-        _jobRole ?? 'Unknown',
-      );
-
-      final updatedFeedbacks = Map<String, AnswerFeedback>.from(currentSession.feedbacks);
-      updatedFeedbacks[questionId] = feedback;
-
-      final updatedSession = InterviewSession(
-        id: currentSession.id,
-        resumeId: currentSession.resumeId,
-        jobRole: currentSession.jobRole,
-        questions: currentSession.questions,
-        feedbacks: updatedFeedbacks,
-        startedAt: currentSession.startedAt,
-      );
-
-      return updatedSession;
-    });
-
-    // Save to database if available
-    if (state.hasValue && state.value != null) {
-      final currentSession = state.value;
-      if (currentSession != null) {
-        try {
-          final supabaseService = ref.read(supabaseServiceProvider);
-          await supabaseService.saveInterviewSession(currentSession);
-        } catch (e) {
-          // Database save failed, but that's okay - we still have the data
-        }
-      }
-    }
-  }
-}
-  }
-
-  Future<InterviewSession> _generateSession(ResumeAnalysis analysis) async {
-    final groqService = ref.read(groqServiceProvider);
-    final questions = await groqService.generateInterviewQuestions(
-      analysis.summary,
-      analysis.jobRole,
-    );
-
-    final session = InterviewSession(
-      id: const Uuid().v4(),
-      resumeId: 'local_${DateTime.now().millisecondsSinceEpoch}',
-      jobRole: analysis.jobRole,
-      questions: questions,
-      feedbacks: {},
-      startedAt: DateTime.now(),
-    );
-
-    return session;
-  }
-
-  Future<void> submitAnswer(String questionId, String answer) async {
-    state = await AsyncValue.guard(() async {
-      final currentSession = state.value;
-      if (currentSession == null) return null;
 
       final question = currentSession.questions.firstWhere(
         (q) => q.id == questionId,
       );
 
-      final groqService = ref.read(groqServiceProvider);
       final feedback = await groqService.evaluateAnswer(
         question.question,
         answer,
         _jobRole ?? 'Unknown',
       );
 
-      final updatedFeedbacks = Map<String, AnswerFeedback>.from(currentSession.feedbacks);
+      final updatedFeedbacks =
+          Map<String, AnswerFeedback>.from(currentSession.feedbacks);
       updatedFeedbacks[questionId] = feedback;
 
       final updatedSession = InterviewSession(
@@ -161,12 +98,17 @@ class InterviewNotifier extends _$InterviewNotifier {
         startedAt: currentSession.startedAt,
       );
 
-      final supabaseService = ref.read(supabaseServiceProvider);
-      await supabaseService.saveQuestionResponse(
-        currentSession.id,
-        question,
-        feedback,
-      );
+      // Best-effort persistence
+      try {
+        final supabaseService = ref.read(supabaseServiceProvider);
+        await supabaseService.saveQuestionResponse(
+          currentSession.id,
+          question,
+          feedback,
+        );
+      } catch (_) {
+        // ignore persistence errors
+      }
 
       return updatedSession;
     });
@@ -176,11 +118,53 @@ class InterviewNotifier extends _$InterviewNotifier {
     final currentSession = state.value;
     if (currentSession == null) return;
 
-    final supabaseService = ref.read(supabaseServiceProvider);
-    await supabaseService.saveInterviewSession(currentSession);
+    try {
+      final supabaseService = ref.read(supabaseServiceProvider);
+      await supabaseService.saveInterviewSession(currentSession);
+    } catch (_) {
+      // ignore persistence errors
+    }
 
-    // Compute overall score if needed, but for now just save
     state = const AsyncValue.data(null);
+  }
+}
+
+@riverpod
+class InterviewProgressNotifier extends _$InterviewProgressNotifier {
+  @override
+  InterviewProgress build() {
+    return InterviewProgress(
+      currentQuestionIndex: 0,
+      categoryScores: const {},
+      overallAverage: 0.0,
+      completionPercentage: 0.0,
+    );
+  }
+
+  void nextQuestion() {
+    final current = state;
+    final newIndex = current.currentQuestionIndex + 1;
+
+    final session = ref.read(interviewNotifierProvider).value;
+    final totalQuestions = session?.questions.length ?? 0;
+    final completion =
+        totalQuestions > 0 ? (newIndex / totalQuestions) * 100.0 : 0.0;
+
+    state = InterviewProgress(
+      currentQuestionIndex: newIndex,
+      categoryScores: current.categoryScores,
+      overallAverage: current.overallAverage,
+      completionPercentage: completion,
+    );
+  }
+
+  void reset() {
+    state = InterviewProgress(
+      currentQuestionIndex: 0,
+      categoryScores: const {},
+      overallAverage: 0.0,
+      completionPercentage: 0.0,
+    );
   }
 }
 
@@ -196,41 +180,4 @@ class InterviewProgress {
     required this.overallAverage,
     required this.completionPercentage,
   });
-}
-
-@riverpod
-class InterviewProgressNotifier extends _$InterviewProgressNotifier {
-  @override
-  InterviewProgress build() {
-    return InterviewProgress(
-      currentQuestionIndex: 0,
-      categoryScores: {},
-      overallAverage: 0.0,
-      completionPercentage: 0.0,
-    );
-  }
-
-  void nextQuestion() {
-    final current = state;
-    final newIndex = current.currentQuestionIndex + 1;
-    final session = ref.read(interviewNotifierProvider).value;
-    final totalQuestions = session?.questions.length ?? 0;
-    final completion = totalQuestions > 0 ? (newIndex / totalQuestions) * 100 : 0.0;
-
-    state = InterviewProgress(
-      currentQuestionIndex: newIndex,
-      categoryScores: current.categoryScores,
-      overallAverage: current.overallAverage,
-      completionPercentage: completion,
-    );
-  }
-
-  void reset() {
-    state = InterviewProgress(
-      currentQuestionIndex: 0,
-      categoryScores: {},
-      overallAverage: 0.0,
-      completionPercentage: 0.0,
-    );
-  }
 }

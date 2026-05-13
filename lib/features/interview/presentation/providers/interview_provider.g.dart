@@ -6,7 +6,7 @@ part of 'interview_provider.dart';
 // RiverpodGenerator
 // **************************************************************************
 
-String _$interviewNotifierHash() => r'b8acf0957378fe8882851927cf994172745c6015';
+String _$interviewNotifierHash() => r'8fdf0463dd9d70fa152e636de259ae6c25eb616e';
 
 /// See also [InterviewNotifier].
 @ProviderFor(InterviewNotifier)
@@ -23,7 +23,7 @@ final interviewNotifierProvider = AutoDisposeAsyncNotifierProvider<
 
 typedef _$InterviewNotifier = AutoDisposeAsyncNotifier<InterviewSession?>;
 String _$interviewProgressNotifierHash() =>
-    r'b2e68dc9ea9f008f3589fcb262aa520055bc96df';
+    r'a4c5f3ce5ad7e9925f47b3b7a07f08a0311c6b73';
 
 /// See also [InterviewProgressNotifier].
 @ProviderFor(InterviewProgressNotifier)

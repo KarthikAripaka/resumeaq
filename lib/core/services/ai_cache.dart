@@ -4,18 +4,34 @@ import '../../features/resume/domain/models/resume_analysis.dart';
 
 class AICache {
   static const String _boxName = 'ai_cache';
-  static const Duration _cacheDuration = Duration(hours: 24); // Cache for 24 hours
+  static const Duration _cacheDuration =
+      Duration(hours: 24); // Cache for 24 hours
 
   static Future<void> init() async {
     await Hive.openBox<String>(_boxName);
   }
 
   static String _generateKey(String resumeText, String jobRole) {
+    // Hive requires string keys <= 255 bytes.
+    // Using a deterministic hash avoids oversized keys.
     final combined = '$resumeText|$jobRole';
-    return base64Encode(utf8.encode(combined)).replaceAll('/', '_');
+    final bytes = utf8.encode(combined);
+
+    // FNV-1a 32-bit (fast, dependency-free, JS-safe literals)
+    const int fnvPrime = 0x01000193;
+    const int offsetBasis = 0x811c9dc5;
+
+    int hash = offsetBasis;
+    for (final b in bytes) {
+      hash ^= b;
+      hash = (hash * fnvPrime) & 0xFFFFFFFF;
+    }
+
+    return hash.toRadixString(16);
   }
 
-  static Future<ResumeAnalysis?> getCachedAnalysis(String resumeText, String jobRole) async {
+  static Future<ResumeAnalysis?> getCachedAnalysis(
+      String resumeText, String jobRole) async {
     final box = Hive.box<String>(_boxName);
     final key = _generateKey(resumeText, jobRole);
     final cached = box.get(key);
@@ -41,7 +57,8 @@ class AICache {
     return null;
   }
 
-  static Future<void> cacheAnalysis(String resumeText, String jobRole, ResumeAnalysis analysis) async {
+  static Future<void> cacheAnalysis(
+      String resumeText, String jobRole, ResumeAnalysis analysis) async {
     final box = Hive.box<String>(_boxName);
     final key = _generateKey(resumeText, jobRole);
     final data = {

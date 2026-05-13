@@ -6,7 +6,7 @@ part of 'resume_provider.dart';
 // RiverpodGenerator
 // **************************************************************************
 
-String _$resumeNotifierHash() => r'3e99281561c7b9e58c23bb8d67772af785e7f17e';
+String _$resumeNotifierHash() => r'bee2907ffdb08aefdb8b607c64eb15dc514330d9';
 
 /// See also [ResumeNotifier].
 @ProviderFor(ResumeNotifier)
@@ -23,7 +23,7 @@ final resumeNotifierProvider =
 
 typedef _$ResumeNotifier = AutoDisposeAsyncNotifier<ResumeAnalysis?>;
 String _$selectedJobRoleNotifierHash() =>
-    r'7f7a029eeeccdae34c8b788c04fbac3ae7ee053b';
+    r'd6da7a8b4e6c7ab3eb6be366d6b621476ff5794f';
 
 /// See also [SelectedJobRoleNotifier].
 @ProviderFor(SelectedJobRoleNotifier)
