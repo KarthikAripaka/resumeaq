@@ -3,8 +3,8 @@ import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../../core/constants/app_constants.dart';
-import '../../providers/resume_provider.dart';
+import 'package:interview_iq_ai/core/constants/app_constants.dart';
+import '../providers/resume_provider.dart';
 
 class UploadScreen extends ConsumerStatefulWidget {
   const UploadScreen({super.key});
@@ -15,7 +15,6 @@ class UploadScreen extends ConsumerStatefulWidget {
 
 class _UploadScreenState extends ConsumerState<UploadScreen> {
   File? _selectedFile;
-  String? _selectedJobRole;
 
   @override
   Widget build(BuildContext context) {
@@ -40,7 +39,7 @@ class _UploadScreenState extends ConsumerState<UploadScreen> {
               child: Container(
                 height: 200,
                 decoration: BoxDecoration(
-                  border: Border.all(dashed: true),
+                  border: Border.all(color: Colors.grey, width: 2, style: BorderStyle.solid),
                   borderRadius: BorderRadius.circular(8),
                 ),
                 child: Center(
@@ -71,6 +70,7 @@ class _UploadScreenState extends ConsumerState<UploadScreen> {
 
   void _analyze() {
     if (_selectedFile != null) {
+      final selectedRole = ref.read(selectedJobRoleNotifierProvider);
       ref.read(resumeNotifierProvider.notifier).uploadAndAnalyze(_selectedFile!, selectedRole);
     }
   }

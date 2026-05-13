@@ -1,21 +1,10 @@
-import 'package:riverpod_annotation/riverpod_annotation.dart';
-import '../../services/gemini_service.dart';
-import '../../services/supabase_service.dart';
-import '../../services/pdf_parser_service.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../services/gemini_service.dart';
+import '../services/supabase_service.dart';
+import '../services/pdf_parser_service.dart';
 
-part 'service_providers.g.dart';
+final geminiServiceProvider = Provider<GeminiService>((ref) => GeminiService());
 
-@riverpod
-GeminiService geminiService(Ref ref) {
-  return GeminiService();
-}
+final supabaseServiceProvider = Provider<SupabaseService>((ref) => SupabaseService());
 
-@riverpod
-SupabaseService supabaseService(Ref ref) {
-  return SupabaseService();
-}
-
-@riverpod
-PdfParserService pdfParserService(Ref ref) {
-  return PdfParserService();
-}
+final pdfParserServiceProvider = Provider<PdfParserService>((ref) => PdfParserService());

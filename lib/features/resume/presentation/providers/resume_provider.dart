@@ -1,7 +1,9 @@
 import 'dart:io';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
-import '../../../core/providers/service_providers.dart';
-import '../../../core/constants/app_constants.dart';
+import '../../../auth/presentation/providers/auth_provider.dart';
+import '../../../../core/providers/service_providers.dart';
+import '../../../../core/constants/app_constants.dart';
 import '../../domain/models/resume_analysis.dart';
 
 part 'resume_provider.g.dart';

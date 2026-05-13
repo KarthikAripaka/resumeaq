@@ -1,8 +1,9 @@
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:uuid/uuid.dart';
-import '../../../core/providers/service_providers.dart';
+import '../../../../core/providers/service_providers.dart';
 import '../../domain/models/interview_models.dart';
-import '../../domain/models/resume_analysis.dart';
+import '../../../resume/domain/models/resume_analysis.dart';
 
 part 'interview_provider.g.dart';
 

@@ -1,3 +1,4 @@
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
@@ -25,20 +26,20 @@ class AuthNotifier extends _$AuthNotifier {
   Future<void> signInWithGoogle() async {
     state = const AsyncValue.loading();
     state = await AsyncValue.guard(() async {
-      final response = await Supabase.instance.client.auth.signInWithOAuth(
+      await Supabase.instance.client.auth.signInWithOAuth(
         OAuthProvider.google,
       );
-      return response.user;
+      return null; // OAuth will update auth state via listener
     });
   }
 
-  Future<void> signInAnonymously() async {
-    state = const AsyncValue.loading();
-    state = await AsyncValue.guard(() async {
-      final response = await Supabase.instance.client.auth.signInAnonymously();
-      return response.user;
-    });
-  }
+  // Future<void> signInAnonymously() async {
+  //   state = const AsyncValue.loading();
+  //   state = await AsyncValue.guard(() async {
+  //     final response = await Supabase.instance.client.auth.signInAnonymously();
+  //     return response.user;
+  //   });
+  // }
 
   Future<void> signOut() async {
     state = const AsyncValue.loading();

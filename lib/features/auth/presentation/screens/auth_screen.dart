@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import '../../providers/auth_provider.dart';
+import '../providers/auth_provider.dart';
 
 class AuthScreen extends ConsumerStatefulWidget {
   const AuthScreen({super.key});
@@ -53,10 +53,10 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
               icon: const Icon(Icons.login),
               label: const Text('Sign in with Google'),
             ),
-            TextButton(
-              onPressed: () => ref.read(authNotifierProvider.notifier).signInAnonymously(),
-              child: const Text('Continue as Guest'),
-            ),
+            // TextButton(
+            //   onPressed: () => ref.read(authNotifierProvider.notifier).signInAnonymously(),
+            //   child: const Text('Continue as Guest'),
+            // ),
             if (authState.isLoading) const CircularProgressIndicator(),
             if (authState.hasError) Text('Error: ${authState.error}'),
           ],

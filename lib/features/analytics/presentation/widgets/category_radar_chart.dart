@@ -24,7 +24,6 @@ class CategoryRadarChart extends StatelessWidget {
         gridBorderData: const BorderSide(color: Colors.grey, width: 2),
         ticksTextStyle: const TextStyle(color: Colors.transparent),
         tickCount: 5,
-        ticksTextStyle: const TextStyle(color: Colors.transparent),
         titleTextStyle: const TextStyle(color: Colors.black, fontSize: 12),
         getTitle: (index, angle) {
           switch (index) {

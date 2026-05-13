@@ -1,19 +1,16 @@
-import 'package:riverpod_annotation/riverpod_annotation.dart';
-import '../../../core/providers/service_providers.dart';
-import '../../../features/interview/domain/models/interview_models.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:interview_iq_ai/features/auth/presentation/providers/auth_provider.dart';
+import 'package:interview_iq_ai/core/providers/service_providers.dart';
+import 'package:interview_iq_ai/features/interview/domain/models/interview_models.dart';
 
-part 'analytics_provider.g.dart';
-
-@riverpod
-Future<List<InterviewSession>> sessionHistory(Ref ref) async {
+final sessionHistoryProvider = FutureProvider<List<InterviewSession>>((ref) async {
   final supabaseService = ref.read(supabaseServiceProvider);
   final userId = ref.read(authNotifierProvider).value?.id ?? '';
   return supabaseService.getHistory(userId);
-}
+});
 
-@riverpod
-Future<Map<String, dynamic>> userStats(Ref ref) async {
+final userStatsProvider = FutureProvider<Map<String, dynamic>>((ref) async {
   final supabaseService = ref.read(supabaseServiceProvider);
   final userId = ref.read(authNotifierProvider).value?.id ?? '';
   return supabaseService.getUserStats(userId);
-}
+});

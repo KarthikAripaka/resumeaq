@@ -2,7 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import '../../../core/theme/app_theme.dart';
+import 'package:interview_iq_ai/core/theme/app_theme.dart';
+import 'package:interview_iq_ai/features/auth/presentation/providers/auth_provider.dart';
 
 class SplashScreen extends ConsumerWidget {
   const SplashScreen({super.key});
@@ -10,8 +11,8 @@ class SplashScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     Future.delayed(const Duration(seconds: 2), () {
-      if (mounted) {
-        final user = ref.read(authNotifierProvider).value;
+      final user = ref.read(authNotifierProvider).value;
+      if (context.mounted) {
         context.go(user != null ? '/home' : '/auth');
       }
     });

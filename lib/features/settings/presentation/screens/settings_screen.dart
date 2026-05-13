@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../auth/providers/auth_provider.dart';
+import '../../../auth/presentation/providers/auth_provider.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 
 class SettingsScreen extends ConsumerWidget {
@@ -29,7 +29,7 @@ class SettingsScreen extends ConsumerWidget {
             ),
             ElevatedButton(
               onPressed: () async {
-                await Hive.box().clear();
+                await Hive.deleteFromDisk();
               },
               child: const Text('Clear Cache'),
             ),
