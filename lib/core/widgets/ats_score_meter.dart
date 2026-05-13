@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_animate/flutter_animate.dart';
 
 class ATSScoreMeter extends StatefulWidget {
   final int score;
@@ -33,7 +32,8 @@ class _ATSScoreMeterState extends State<ATSScoreMeter>
   void didUpdateWidget(covariant ATSScoreMeter oldWidget) {
     super.didUpdateWidget(oldWidget);
     if (oldWidget.score != widget.score) {
-      _animation = Tween<double>(begin: 0, end: widget.score.toDouble()).animate(
+      _animation =
+          Tween<double>(begin: 0, end: widget.score.toDouble()).animate(
         CurvedAnimation(parent: _controller, curve: Curves.easeOutCubic),
       );
       _controller.reset();

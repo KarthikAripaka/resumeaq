@@ -1,7 +1,7 @@
 import 'dart:io';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:interview_iq_ai/features/auth/presentation/providers/auth_provider.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
-import '../../../auth/presentation/providers/auth_provider.dart';
 import '../../../../core/providers/service_providers.dart';
 import '../../../../core/constants/app_constants.dart';
 import '../../domain/models/resume_analysis.dart';

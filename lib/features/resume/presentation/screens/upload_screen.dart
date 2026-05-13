@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:interview_iq_ai/core/constants/app_constants.dart';
-import '../providers/resume_provider.dart';
+import 'package:interview_iq_ai/features/resume/presentation/providers/resume_provider.dart';
 
 class UploadScreen extends ConsumerStatefulWidget {
   const UploadScreen({super.key});
@@ -32,19 +32,22 @@ class _UploadScreenState extends ConsumerState<UploadScreen> {
               items: AppConstants.jobRoles.map((role) {
                 return DropdownMenuItem(value: role, child: Text(role));
               }).toList(),
-              onChanged: (value) => ref.read(selectedJobRoleNotifierProvider.notifier).setJobRole(value!),
+              onChanged: (value) => ref
+                  .read(selectedJobRoleNotifierProvider.notifier)
+                  .setJobRole(value!),
             ),
             GestureDetector(
               onTap: _pickFile,
               child: Container(
                 height: 200,
                 decoration: BoxDecoration(
-                  border: Border.all(color: Colors.grey, width: 2, style: BorderStyle.solid),
+                  border: Border.all(color: Colors.grey, width: 2),
                   borderRadius: BorderRadius.circular(8),
                 ),
                 child: Center(
                   child: _selectedFile != null
-                      ? Text('${_selectedFile!.path.split('/').last} (${_selectedFile!.lengthSync()} bytes)')
+                      ? Text(
+                          '${_selectedFile!.path.split('/').last} (${_selectedFile!.lengthSync()} bytes)')
                       : const Text('Drop PDF here or tap to select'),
                 ),
               ),
@@ -62,7 +65,8 @@ class _UploadScreenState extends ConsumerState<UploadScreen> {
   }
 
   void _pickFile() async {
-    final result = await FilePicker.platform.pickFiles(type: FileType.custom, allowedExtensions: ['pdf']);
+    final result = await FilePicker.platform
+        .pickFiles(type: FileType.custom, allowedExtensions: ['pdf']);
     if (result != null && mounted) {
       setState(() => _selectedFile = File(result.files.single.path!));
     }
@@ -71,7 +75,9 @@ class _UploadScreenState extends ConsumerState<UploadScreen> {
   void _analyze() {
     if (_selectedFile != null) {
       final selectedRole = ref.read(selectedJobRoleNotifierProvider);
-      ref.read(resumeNotifierProvider.notifier).uploadAndAnalyze(_selectedFile!, selectedRole);
+      ref
+          .read(resumeNotifierProvider.notifier)
+          .uploadAndAnalyze(_selectedFile!, selectedRole);
     }
   }
 }

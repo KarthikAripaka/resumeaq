@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import '../providers/resume_provider.dart';
+import 'package:interview_iq_ai/features/resume/presentation/providers/resume_provider.dart';
 
 class AnalysisScreen extends ConsumerWidget {
   const AnalysisScreen({super.key});
@@ -28,20 +28,27 @@ class AnalysisScreen extends ConsumerWidget {
                   color: Colors.green,
                   shape: BoxShape.circle,
                 ),
-                child: Center(child: Text('${analysis.atsScore}', style: const TextStyle(fontSize: 24))),
+                child: Center(
+                    child: Text('${analysis.atsScore}',
+                        style: const TextStyle(fontSize: 24))),
               ),
             ),
             const Text('Strengths'),
             Wrap(
-              children: analysis.strengths.map((s) => Chip(label: Text(s))).toList(),
+              children:
+                  analysis.strengths.map((s) => Chip(label: Text(s))).toList(),
             ),
             const Text('Missing Skills'),
             Wrap(
-              children: analysis.missingSkills.map((s) => Chip(label: Text(s), backgroundColor: Colors.red)).toList(),
+              children: analysis.missingSkills
+                  .map((s) => Chip(label: Text(s), backgroundColor: Colors.red))
+                  .toList(),
             ),
             const Text('Improvement Tips'),
             Column(
-              children: analysis.improvementTips.map((tip) => Card(child: Text(tip))).toList(),
+              children: analysis.improvementTips
+                  .map((tip) => Card(child: Text(tip)))
+                  .toList(),
             ),
             LinearProgressIndicator(value: analysis.atsScore / 100 * 0.9),
             ElevatedButton(

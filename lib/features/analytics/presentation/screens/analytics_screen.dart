@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:fl_chart/fl_chart.dart';
-import '../providers/analytics_provider.dart';
+import 'package:interview_iq_ai/features/analytics/presentation/providers/analytics_provider.dart';
 
 class AnalyticsScreen extends ConsumerWidget {
   const AnalyticsScreen({super.key});
@@ -47,7 +47,10 @@ class AnalyticsScreen extends ConsumerWidget {
                 RadarChartData(
                   dataSets: [
                     RadarDataSet(
-                      dataEntries: [const RadarEntry(value: 7), const RadarEntry(value: 8)],
+                      dataEntries: [
+                        const RadarEntry(value: 7),
+                        const RadarEntry(value: 8)
+                      ],
                     ),
                   ],
                 ),
@@ -56,7 +59,9 @@ class AnalyticsScreen extends ConsumerWidget {
             Expanded(
               child: history.when(
                 data: (sessions) => ListView(
-                  children: sessions.map((s) => Card(child: Text(s.jobRole))).toList(),
+                  children: sessions
+                      .map((s) => Card(child: Text(s.jobRole)))
+                      .toList(),
                 ),
                 loading: () => const CircularProgressIndicator(),
                 error: (e, _) => Text('Error: $e'),

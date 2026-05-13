@@ -1,5 +1,4 @@
 import 'dart:convert';
-import 'dart:io';
 import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
@@ -20,7 +19,8 @@ class GeminiService {
           ),
         );
 
-  Future<ResumeAnalysis> analyzeResume(String resumeText, String jobRole) async {
+  Future<ResumeAnalysis> analyzeResume(
+      String resumeText, String jobRole) async {
     final prompt = '''
 You are an expert ATS resume analyzer. Analyze the resume below for a $jobRole role.
 Respond ONLY with valid JSON matching this exact schema:
@@ -79,7 +79,8 @@ $resumeText
           .map((q) => InterviewQuestion.fromJson(q))
           .toList();
     } catch (e) {
-      throw GeminiParseException('Failed to parse InterviewQuestions: $response');
+      throw GeminiParseException(
+          'Failed to parse InterviewQuestions: $response');
     }
   }
 
@@ -150,7 +151,8 @@ Provide a plain text 30-day plan with daily tasks.
           debugPrint('Gemini Response: ${response.data}');
         }
 
-        final text = response.data['candidates'][0]['content']['parts'][0]['text'] as String;
+        final text = response.data['candidates'][0]['content']['parts'][0]
+            ['text'] as String;
         return _cleanJsonResponse(text);
       } on DioException catch (e) {
         if (e.response?.statusCode == 429 || e.response?.statusCode == 503) {

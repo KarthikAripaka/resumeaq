@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../providers/interview_provider.dart';
+import 'package:interview_iq_ai/features/interview/presentation/providers/interview_provider.dart';
 
 class InterviewScreen extends ConsumerStatefulWidget {
   const InterviewScreen({super.key});
@@ -24,15 +24,18 @@ class _InterviewScreenState extends ConsumerState<InterviewScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: LinearProgressIndicator(value: progress.completionPercentage / 100),
+        title:
+            LinearProgressIndicator(value: progress.completionPercentage / 100),
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(
           children: [
-            Text('${progress.currentQuestionIndex + 1} / ${session.questions.length}'),
+            Text(
+                '${progress.currentQuestionIndex + 1} / ${session.questions.length}'),
             Chip(label: Text(currentQuestion.category)),
-            Text(currentQuestion.question, style: const TextStyle(fontSize: 18)),
+            Text(currentQuestion.question,
+                style: const TextStyle(fontSize: 18)),
             const SizedBox(height: 20),
             TextField(
               controller: _answerController,
@@ -54,7 +57,9 @@ class _InterviewScreenState extends ConsumerState<InterviewScreen> {
   }
 
   void _submitAnswer(String questionId) {
-    ref.read(interviewNotifierProvider.notifier).submitAnswer(questionId, _answerController.text);
+    ref
+        .read(interviewNotifierProvider.notifier)
+        .submitAnswer(questionId, _answerController.text);
     ref.read(interviewProgressNotifierProvider.notifier).nextQuestion();
     _answerController.clear();
   }

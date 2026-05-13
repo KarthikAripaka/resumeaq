@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../../auth/presentation/providers/auth_provider.dart';
+import 'package:interview_iq_ai/features/auth/presentation/providers/auth_provider.dart';
+
 import 'package:hive_flutter/hive_flutter.dart';
 
 class SettingsScreen extends ConsumerWidget {
@@ -21,7 +22,8 @@ class SettingsScreen extends ConsumerWidget {
               title: Text('User: ${user?.email ?? 'Guest'}'),
             ),
             ElevatedButton(
-              onPressed: () => ref.read(authNotifierProvider.notifier).signOut(),
+              onPressed: () =>
+                  ref.read(authNotifierProvider.notifier).signOut(),
               child: const Text('Sign Out'),
             ),
             const ListTile(
