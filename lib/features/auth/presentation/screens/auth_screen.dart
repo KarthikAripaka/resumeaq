@@ -45,7 +45,7 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
               ],
             ),
             ElevatedButton(
-              onPressed: () => _signIn(),
+              onPressed: () => _authenticate(),
               child: Text(_isSignUp ? 'Sign Up' : 'Sign In'),
             ),
             ElevatedButton.icon(
@@ -65,10 +65,17 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
     );
   }
 
-  void _signIn() {
-    ref.read(authNotifierProvider.notifier).signInWithEmail(
-      _emailController.text,
-      _passwordController.text,
-    );
+  void _authenticate() {
+    if (_isSignUp) {
+      ref.read(authNotifierProvider.notifier).signUpWithEmail(
+        _emailController.text,
+        _passwordController.text,
+      );
+    } else {
+      ref.read(authNotifierProvider.notifier).signInWithEmail(
+        _emailController.text,
+        _passwordController.text,
+      );
+    }
   }
 }

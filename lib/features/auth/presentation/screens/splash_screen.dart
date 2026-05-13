@@ -5,18 +5,33 @@ import 'package:go_router/go_router.dart';
 import 'package:interview_iq_ai/core/theme/app_theme.dart';
 import 'package:interview_iq_ai/features/auth/presentation/providers/auth_provider.dart';
 
-class SplashScreen extends ConsumerWidget {
+class SplashScreen extends ConsumerStatefulWidget {
   const SplashScreen({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    Future.delayed(const Duration(seconds: 2), () {
-      final user = ref.read(authNotifierProvider).value;
-      if (context.mounted) {
-        context.go(user != null ? '/home' : '/auth');
+  ConsumerState<SplashScreen> createState() => _SplashScreenState();
+}
+
+class _SplashScreenState extends ConsumerState<SplashScreen> {
+  @override
+  void initState() {
+    super.initState();
+    // Fallback: if auth state doesn't change within 5 seconds, redirect to auth
+    Future.delayed(const Duration(seconds: 5), () {
+      if (mounted) {
+        final authState = ref.read(authNotifierProvider);
+        if (authState.isLoading) {
+          // If still loading after 5 seconds, redirect to auth
+          context.go('/auth');
+        }
       }
     });
+  }
 
+  @override
+  Widget build(BuildContext context) {
+    // The router will automatically redirect based on auth state
+    // This fallback ensures we don't get stuck forever
     return Scaffold(
       backgroundColor: AppTheme.darkTheme.colorScheme.surface,
       body: Center(

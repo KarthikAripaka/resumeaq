@@ -23,6 +23,17 @@ class AuthNotifier extends _$AuthNotifier {
     });
   }
 
+  Future<void> signUpWithEmail(String email, String password) async {
+    state = const AsyncValue.loading();
+    state = await AsyncValue.guard(() async {
+      final response = await Supabase.instance.client.auth.signUp(
+        email: email,
+        password: password,
+      );
+      return response.user;
+    });
+  }
+
   Future<void> signInWithGoogle() async {
     state = const AsyncValue.loading();
     state = await AsyncValue.guard(() async {

@@ -14,7 +14,7 @@ class UploadScreen extends ConsumerStatefulWidget {
 }
 
 class _UploadScreenState extends ConsumerState<UploadScreen> {
-  File? _selectedFile;
+  PlatformFile? _selectedFile;
 
   @override
   Widget build(BuildContext context) {
@@ -46,8 +46,7 @@ class _UploadScreenState extends ConsumerState<UploadScreen> {
                 ),
                 child: Center(
                   child: _selectedFile != null
-                      ? Text(
-                          '${_selectedFile!.path.split('/').last} (${_selectedFile!.lengthSync()} bytes)')
+                      ? Text('${_selectedFile!.name} (${_selectedFile!.size} bytes)')
                       : const Text('Drop PDF here or tap to select'),
                 ),
               ),
@@ -68,7 +67,7 @@ class _UploadScreenState extends ConsumerState<UploadScreen> {
     final result = await FilePicker.platform
         .pickFiles(type: FileType.custom, allowedExtensions: ['pdf']);
     if (result != null && mounted) {
-      setState(() => _selectedFile = File(result.files.single.path!));
+      setState(() => _selectedFile = result.files.single);
     }
   }
 

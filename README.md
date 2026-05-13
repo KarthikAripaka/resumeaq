@@ -105,15 +105,28 @@ supabase/
      - Go to Authentication > Providers
      - Enable Google, add your OAuth client ID/secret
 
-5. **Storage setup**
-   - In Supabase dashboard, create a new storage bucket named "resumes"
-   - Set it to private
-   - Add RLS policy: authenticated users can upload/read their own folder
+5. **Storage setup** (CRITICAL for resume uploads)
+   - In Supabase dashboard, go to **Storage**
+   - Click **Create bucket**
+   - Name: `resumes`
+   - Set as **Public** ✅
+   - Or follow the detailed setup in `SUPABASE_STORAGE_SETUP.md`
 
 6. **Run the app**
    ```bash
-   flutter run
-   ```
+    flutter run
+    ```
+
+## Testing Without Storage Setup
+
+If you get storage bucket errors during resume upload, the app will automatically fall back to **local analysis mode**. You'll still get:
+
+- ✅ AI-powered resume analysis
+- ✅ Mock interview questions
+- ✅ Real-time feedback evaluation
+- ❌ Resume uploads won't be saved to cloud
+
+Set up Supabase Storage later using `SUPABASE_STORAGE_SETUP.md` for full functionality.
 
 ## Environment Variables
 

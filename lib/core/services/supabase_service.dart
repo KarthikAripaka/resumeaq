@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'dart:typed_data';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../features/resume/domain/models/resume_analysis.dart';
 import '../../features/interview/domain/models/interview_models.dart';
@@ -16,6 +17,38 @@ class SupabaseService {
       return _client.storage.from('resumes').getPublicUrl(fileName);
     } else {
       throw Exception('Upload failed');
+    }
+  }
+
+  Future<String> uploadResumeBytes(List<int> bytes, String fileName, String userId) async {
+    try {
+      // First check if the bucket exists
+      final buckets = await _client.storage.listBuckets();
+      final resumeBucket = buckets.firstWhere(
+        (bucket) => bucket.id == 'resumes',
+        orElse: () => throw Exception('Storage bucket "resumes" does not exist. Please create it in your Supabase dashboard.'),
+      );
+
+      final fileNameWithPath = '$userId/${DateTime.now().millisecondsSinceEpoch}_${fileName}';
+      final uint8List = Uint8List.fromList(bytes);
+
+      final response = await _client.storage
+          .from('resumes')
+          .uploadBinary(fileNameWithPath, uint8List);
+
+      if (response.isNotEmpty) {
+        return _client.storage.from('resumes').getPublicUrl(fileNameWithPath);
+      } else {
+        throw Exception('Upload failed: Empty response from storage');
+      }
+    } catch (e) {
+      // Provide more detailed error information
+      final errorMessage = e.toString().toLowerCase();
+      if (errorMessage.contains('bucket') || errorMessage.contains('storage') || errorMessage.contains('not found')) {
+        throw Exception('Storage bucket error: Please ensure the "resumes" bucket exists in your Supabase project and is configured as public. Check the README for setup instructions.');
+      } else {
+        throw Exception('Upload failed: $e');
+      }
     }
   }
 

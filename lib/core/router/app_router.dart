@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../features/auth/presentation/screens/splash_screen.dart';
 import '../../features/auth/presentation/screens/auth_screen.dart';
 import '../../features/dashboard/presentation/screens/home_screen.dart';
@@ -10,18 +10,32 @@ import '../../features/interview/presentation/screens/interview_screen.dart';
 import '../../features/interview/presentation/screens/results_screen.dart';
 import '../../features/analytics/presentation/screens/analytics_screen.dart';
 import '../../features/settings/presentation/screens/settings_screen.dart';
+import '../../features/auth/presentation/providers/auth_provider.dart';
 
-class AppRouter {
-  static final router = GoRouter(
+final routerProvider = Provider<GoRouter>((ref) {
+  final authState = ref.watch(authNotifierProvider);
+
+  return GoRouter(
     initialLocation: '/splash',
     redirect: (context, state) {
-      final session = Supabase.instance.client.auth.currentSession;
       final isAuthRoute = state.matchedLocation.startsWith('/auth');
       final isSplashRoute = state.matchedLocation == '/splash';
 
-      if (session == null && !isAuthRoute && !isSplashRoute) {
-        return '/auth';
+      // While auth is loading, stay on splash screen
+      if (authState.isLoading) {
+        return isSplashRoute ? null : '/splash';
       }
+
+      // If auth failed or user is null, redirect to auth (unless already there)
+      if (authState.hasError || authState.value == null) {
+        return isAuthRoute ? null : '/auth';
+      }
+
+      // If user is authenticated and on splash/auth, redirect to home
+      if (authState.value != null && (isAuthRoute || isSplashRoute)) {
+        return '/home';
+      }
+
       return null;
     },
     routes: [
@@ -68,7 +82,7 @@ class AppRouter {
       ),
     ],
   );
-}
+});
 
 class MainShell extends StatelessWidget {
   final Widget child;

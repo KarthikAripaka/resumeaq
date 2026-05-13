@@ -46,7 +46,7 @@ class ATSTrendChart extends StatelessWidget {
             belowBarData: BarAreaData(
               show: true,
               gradient: LinearGradient(
-                colors: [Colors.blue.withOpacity(0.3), Colors.blue.withOpacity(0.1)],
+                colors: [Colors.blue.withValues(alpha: 0.3), Colors.blue.withValues(alpha: 0.1)],
                 begin: Alignment.topCenter,
                 end: Alignment.bottomCenter,
               ),

@@ -48,8 +48,10 @@ class AnalyticsScreen extends ConsumerWidget {
                   dataSets: [
                     RadarDataSet(
                       dataEntries: [
-                        const RadarEntry(value: 7),
-                        const RadarEntry(value: 8)
+                        const RadarEntry(value: 7), // HR
+                        const RadarEntry(value: 8), // Technical
+                        const RadarEntry(value: 6), // DSA
+                        const RadarEntry(value: 7), // Project
                       ],
                     ),
                   ],

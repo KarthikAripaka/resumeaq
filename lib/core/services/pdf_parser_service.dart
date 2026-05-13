@@ -26,6 +26,24 @@ class PdfParserService {
     return cleanedText.length > 8000 ? cleanedText.substring(0, 8000) : cleanedText;
   }
 
+  Future<String> extractTextFromBytes(List<int> pdfBytes) async {
+    if (pdfBytes.isEmpty) {
+      throw PdfParseException('PDF bytes are empty');
+    }
+
+    final document = PdfDocument(inputBytes: pdfBytes);
+    final text = PdfTextExtractor(document).extractText();
+
+    document.dispose();
+
+    if (text.trim().isEmpty) {
+      throw PdfParseException('No text extracted from PDF');
+    }
+
+    final cleanedText = _cleanText(text);
+    return cleanedText.length > 8000 ? cleanedText.substring(0, 8000) : cleanedText;
+  }
+
   String _cleanText(String text) {
     // Remove excessive whitespace and normalize newlines
     return text
