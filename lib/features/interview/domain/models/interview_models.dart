@@ -25,8 +25,11 @@ class AnswerFeedback {
   final int score;
   final String correctness;
   final String communication;
+  @JsonKey(name: 'confidence_tip')
   final String confidenceTip;
+  @JsonKey(name: 'ideal_answer_hints')
   final String idealAnswerHints;
+  @JsonKey(name: 'follow_up_question')
   final String followUpQuestion;
 
   const AnswerFeedback({

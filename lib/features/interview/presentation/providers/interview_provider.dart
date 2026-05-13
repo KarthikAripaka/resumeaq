@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:uuid/uuid.dart';
@@ -68,9 +69,12 @@ class InterviewNotifier extends _$InterviewNotifier {
     );
   }
 
-  Future<void> submitAnswer(String questionId, String answer) async {
+  Future<void> submitAnswer(String questionId, String? answer) async {
     final currentSession = state.value;
     if (currentSession == null) return;
+
+    // Use empty string as fallback if answer is null
+    final safeAnswer = answer ?? '';
 
     state = await AsyncValue.guard(() async {
       final groqService = ref.read(groqServiceProvider);
@@ -81,7 +85,7 @@ class InterviewNotifier extends _$InterviewNotifier {
 
       final feedback = await groqService.evaluateAnswer(
         question.question,
-        answer,
+        safeAnswer,
         _jobRole ?? 'Unknown',
       );
 
@@ -121,8 +125,11 @@ class InterviewNotifier extends _$InterviewNotifier {
     try {
       final supabaseService = ref.read(supabaseServiceProvider);
       await supabaseService.saveInterviewSession(currentSession);
-    } catch (_) {
-      // ignore persistence errors
+
+      // Session is saved, analytics will load it via the provider
+    } catch (e) {
+      debugPrint('Error ending session: $e');
+      // ignore persistence errors but still update local state
     }
 
     state = const AsyncValue.data(null);

@@ -349,7 +349,25 @@ class AIResponseParser {
       final cleanedJson = _extractAndCleanJson(rawResponse);
       final json = jsonDecode(cleanedJson);
 
-      return Map<String, dynamic>.from(json);
+      // Normalize field names to match Dart model expectations
+      final normalized = <String, dynamic>{};
+      json.forEach((key, value) {
+        switch (key) {
+          case 'confidence_tip':
+            normalized['confidenceTip'] = value;
+            break;
+          case 'ideal_answer_hints':
+            normalized['idealAnswerHints'] = value;
+            break;
+          case 'follow_up_question':
+            normalized['followUpQuestion'] = value;
+            break;
+          default:
+            normalized[key] = value;
+        }
+      });
+
+      return normalized;
     } catch (e) {
       // Return safe fallback feedback
       return _createFallbackFeedback();

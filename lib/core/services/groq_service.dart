@@ -198,22 +198,44 @@ $trimmedResume
 
   Future<AnswerFeedback> evaluateAnswer(
       String question, String answer, String jobRole) async {
+    final hasVoiceRecording = answer.contains('[Voice Recording');
+    final voiceQuality = hasVoiceRecording ?
+      answer.split('Quality: ')[1].split(',')[0] : 'none';
+    final voiceConfidence = hasVoiceRecording ?
+      answer.split('Confidence: ')[1].split(',')[0] : 'none';
+    final voiceClarity = hasVoiceRecording ?
+      answer.split('Clarity: ')[1].split(']')[0] : 'none';
+
     final prompt = '''
-You are a senior $jobRole interviewer. Evaluate this interview answer.
+You are a senior $jobRole interviewer conducting a comprehensive evaluation.
 
 Question: $question
-Answer: $answer
+Answer: ${hasVoiceRecording ? answer.split('\n\n[')[0] : answer}
+
+${hasVoiceRecording ? '''
+VOICE ANALYSIS:
+- Recording Quality: $voiceQuality
+- Speaker Confidence: $voiceConfidence
+- Speech Clarity: $voiceClarity
+- Voice recordings should be evaluated for communication skills, confidence, and professionalism.
+''' : ''}
+
+EVALUATION CRITERIA:
+- Correctness: How accurate and relevant is the answer?
+- Communication: How well is it articulated?${hasVoiceRecording ? ' (Consider voice quality, confidence, and clarity)' : ''}
+- Confidence: Does the candidate seem knowledgeable and self-assured?
+- Completeness: Does the answer fully address the question?
 
 IMPORTANT: Respond with ONLY valid JSON. No markdown, no explanations.
 
 JSON Schema:
 {
   "score": 1-10,
-  "correctness": "brief assessment",
-  "communication": "brief assessment",
-  "confidence_tip": "brief tip",
-  "ideal_answer_hints": "brief hints",
-  "follow_up_question": "follow-up question"
+  "correctness": "detailed assessment of answer accuracy and relevance",
+  "communication": "assessment of articulation${hasVoiceRecording ? ', voice quality, and delivery' : ' and clarity'}",
+  "confidence_tip": "specific advice to improve confidence and delivery",
+  "ideal_answer_hints": "what a strong answer should include",
+  "follow_up_question": "a relevant follow-up question to probe deeper"
 }
 ''';
 

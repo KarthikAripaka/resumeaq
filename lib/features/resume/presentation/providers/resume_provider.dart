@@ -2,17 +2,39 @@ import 'package:file_picker/file_picker.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'dart:convert';
 import '../../../../core/constants/app_constants.dart';
 import '../../../../core/providers/service_providers.dart';
 import '../../../../core/services/local_storage_service.dart';
+import '../../../../core/services/ai_cache.dart';
 import '../../domain/models/resume_analysis.dart';
 
 part 'resume_provider.g.dart';
 
+// Global provider to store current analysis
+final currentAnalysisProvider = StateProvider<ResumeAnalysis?>((ref) => null);
+
 @riverpod
 class ResumeNotifier extends _$ResumeNotifier {
   @override
-  FutureOr<ResumeAnalysis?> build() => null;
+  FutureOr<ResumeAnalysis?> build() async {
+    // Try to load last analysis from shared preferences
+    final prefs = await SharedPreferences.getInstance();
+    final analysisJson = prefs.getString('last_resume_analysis');
+    if (analysisJson != null) {
+      try {
+        final analysisMap = jsonDecode(analysisJson) as Map<String, dynamic>;
+        final analysis = ResumeAnalysis.fromJson(analysisMap);
+        // Update the global provider
+        Future.microtask(() => ref.read(currentAnalysisProvider.notifier).state = analysis);
+        return analysis;
+      } catch (e) {
+        debugPrint('Failed to load cached analysis: $e');
+      }
+    }
+    return null;
+  }
 
   String _getUserFriendlyErrorMessage(Object error) {
     final errorString = error.toString().toLowerCase();
@@ -47,6 +69,13 @@ class ResumeNotifier extends _$ResumeNotifier {
       ]);
 
       state = AsyncValue.data(analysis);
+
+      // Save to shared preferences for persistence
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setString('last_resume_analysis', jsonEncode(analysis.toJson()));
+
+      // Update global provider
+      ref.read(currentAnalysisProvider.notifier).state = analysis;
     } catch (error, stackTrace) {
       final userFriendlyError = _getUserFriendlyErrorMessage(error);
       state = AsyncValue.error(userFriendlyError, stackTrace);

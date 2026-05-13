@@ -3,6 +3,7 @@ import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:interview_iq_ai/features/resume/presentation/providers/resume_provider.dart';
+import 'package:interview_iq_ai/features/resume/domain/models/resume_analysis.dart';
 import 'package:shimmer/shimmer.dart';
 
 class AnalysisScreen extends ConsumerWidget {
@@ -132,7 +133,20 @@ class AnalysisScreen extends ConsumerWidget {
         ),
       ),
       data: (analysis) {
-        final safeAnalysis = analysis!;
+        if (analysis == null) {
+          return Scaffold(
+            appBar: AppBar(title: const Text('Analysis Error')),
+            body: const Center(
+              child: Text('No analysis data available. Please try uploading again.'),
+            ),
+          );
+        }
+
+        final safeAnalysis = analysis;
+        // Update the current analysis provider
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          ref.read(currentAnalysisProvider.notifier).state = safeAnalysis;
+        });
 
         return Scaffold(
           appBar: AppBar(title: const Text('Resume Analysis')),

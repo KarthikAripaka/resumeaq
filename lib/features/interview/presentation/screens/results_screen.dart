@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:confetti/confetti.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:go_router/go_router.dart';
+import 'package:share_plus/share_plus.dart';
 import 'package:interview_iq_ai/features/analytics/presentation/providers/analytics_provider.dart';
 
 class ResultsScreen extends ConsumerStatefulWidget {
@@ -38,12 +39,7 @@ class _ResultsScreenState extends ConsumerState<ResultsScreen> {
         actions: [
           IconButton(
             icon: const Icon(Icons.share),
-            onPressed: () {
-              // TODO: Implement share functionality
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('Share functionality coming soon!')),
-              );
-            },
+            onPressed: _shareResults,
           ),
         ],
       ),
@@ -513,5 +509,62 @@ class _ResultsScreenState extends ConsumerState<ResultsScreen> {
         ),
       ],
     );
+  }
+
+  Future<void> _shareResults() async {
+    final sessionHistory = ref.read(sessionHistoryProvider);
+    if (sessionHistory.valueOrNull == null || sessionHistory.value!.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('No results to share')),
+      );
+      return;
+    }
+
+    final latestSession = sessionHistory.value!.first;
+    final feedbacks = latestSession.feedbacks.values.toList();
+
+    if (feedbacks.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Complete your interview first')),
+      );
+      return;
+    }
+
+    final overallScore = feedbacks.map((f) => f.score).reduce((a, b) => a + b) / feedbacks.length;
+
+    final shareText = '''
+🎯 InterviewIQ AI - Interview Results
+
+📊 Overall Score: ${overallScore.toStringAsFixed(1)}/10
+🎯 Role: ${latestSession.jobRole}
+📅 Date: ${latestSession.startedAt.toString().split('.')[0]}
+
+📈 Performance Summary:
+${feedbacks.length} questions answered
+${feedbacks.where((f) => f.score >= 7).length} strong responses
+${feedbacks.where((f) => f.score >= 5 && f.score < 7).length} good responses
+
+💡 Key Strengths:
+${feedbacks.where((f) => f.score >= 7).map((f) => '• ${f.correctness.split('.')[0]}').take(3).join('\n')}
+
+🔧 Areas to Improve:
+${feedbacks.where((f) => f.score < 7).map((f) => '• ${f.correctness.split('.')[0]}').take(3).join('\n')}
+
+🚀 Next Steps:
+Continue practicing with InterviewIQ AI for better results!
+
+#InterviewPrep #InterviewIQ #CareerGrowth
+    '''.trim();
+
+    try {
+      await Share.share(
+        shareText,
+        subject: 'My InterviewIQ AI Results - ${latestSession.jobRole}',
+      );
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Failed to share: $e')),
+      );
+    }
   }
 }

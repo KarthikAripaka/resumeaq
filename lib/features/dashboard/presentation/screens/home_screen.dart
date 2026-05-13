@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:interview_iq_ai/features/auth/presentation/providers/auth_provider.dart';
 import 'package:interview_iq_ai/features/analytics/presentation/providers/analytics_provider.dart';
+import 'package:interview_iq_ai/core/providers/service_providers.dart';
 
 class HomeScreen extends ConsumerWidget {
   const HomeScreen({super.key});
@@ -18,10 +19,44 @@ class HomeScreen extends ConsumerWidget {
       appBar: AppBar(
         title: Text('Welcome back, ${user?.email?.split('@')[0] ?? 'User'}!'),
         actions: [
-          IconButton(
-            icon: const Icon(Icons.notifications_outlined),
-            onPressed: () {
-              // TODO: Implement notifications
+          Consumer(
+            builder: (context, ref, child) {
+              final notifications = ref.watch(notificationsProvider);
+              final unreadCount = notifications.where((n) => !n.isRead).length;
+
+              return Stack(
+                children: [
+                  IconButton(
+                    icon: const Icon(Icons.notifications_outlined),
+                    onPressed: () => _showNotifications(context, ref),
+                  ),
+                  if (unreadCount > 0)
+                    Positioned(
+                      right: 8,
+                      top: 8,
+                      child: Container(
+                        padding: const EdgeInsets.all(2),
+                        decoration: BoxDecoration(
+                          color: Colors.red,
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        constraints: const BoxConstraints(
+                          minWidth: 18,
+                          minHeight: 18,
+                        ),
+                        child: Text(
+                          unreadCount.toString(),
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 10,
+                            fontWeight: FontWeight.bold,
+                          ),
+                          textAlign: TextAlign.center,
+                        ),
+                      ),
+                    ),
+                ],
+              );
             },
           ),
         ],
@@ -295,6 +330,148 @@ class HomeScreen extends ConsumerWidget {
         ).animate().fadeIn().slideY(),
       ),
     );
+  }
+
+  void _showNotifications(BuildContext context, WidgetRef ref) {
+    final notifications = ref.read(notificationsProvider);
+
+    showModalBottomSheet(
+      context: context,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (context) {
+        return Container(
+          padding: const EdgeInsets.all(20),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Row(
+                children: [
+                  const Text(
+                    'Notifications',
+                    style: TextStyle(
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  const Spacer(),
+                  TextButton(
+                    onPressed: () {
+                      // Mark all as read
+                      for (final notification in notifications) {
+                        ref.read(notificationsProvider.notifier).markAsRead(notification.id);
+                      }
+                      Navigator.of(context).pop();
+                    },
+                    child: const Text('Mark all read'),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 16),
+              if (notifications.isEmpty)
+                const Center(
+                  child: Padding(
+                    padding: EdgeInsets.all(32),
+                    child: Text('No notifications yet'),
+                  ),
+                )
+              else
+                ...notifications.map((notification) {
+                  return Container(
+                    margin: const EdgeInsets.only(bottom: 12),
+                    padding: const EdgeInsets.all(16),
+                    decoration: BoxDecoration(
+                      color: notification.isRead ? Colors.grey.shade100 : Colors.blue.shade50,
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(
+                        color: notification.isRead ? Colors.grey.shade300 : Colors.blue.shade200,
+                      ),
+                    ),
+                    child: Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Icon(
+                          _getNotificationIcon(notification.type),
+                          color: notification.isRead ? Colors.grey : Colors.blue,
+                        ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                notification.title,
+                                style: TextStyle(
+                                  fontWeight: notification.isRead ? FontWeight.normal : FontWeight.bold,
+                                  fontSize: 16,
+                                ),
+                              ),
+                              const SizedBox(height: 4),
+                              Text(
+                                notification.message,
+                                style: TextStyle(
+                                  color: Colors.grey.shade600,
+                                  fontSize: 14,
+                                ),
+                              ),
+                              const SizedBox(height: 8),
+                              Text(
+                                _formatTimeAgo(notification.timestamp),
+                                style: TextStyle(
+                                  color: Colors.grey.shade500,
+                                  fontSize: 12,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        if (!notification.isRead)
+                          IconButton(
+                            icon: const Icon(Icons.circle, size: 8),
+                            onPressed: () {
+                              ref.read(notificationsProvider.notifier).markAsRead(notification.id);
+                            },
+                            color: Colors.blue,
+                          ),
+                      ],
+                    ),
+                  );
+                }),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  IconData _getNotificationIcon(NotificationType type) {
+    switch (type) {
+      case NotificationType.welcome:
+        return Icons.waving_hand;
+      case NotificationType.tips:
+        return Icons.lightbulb;
+      case NotificationType.achievement:
+        return Icons.star;
+      case NotificationType.reminder:
+        return Icons.schedule;
+    }
+  }
+
+  String _formatTimeAgo(DateTime timestamp) {
+    final now = DateTime.now();
+    final difference = now.difference(timestamp);
+
+    if (difference.inDays > 0) {
+      return '${difference.inDays}d ago';
+    } else if (difference.inHours > 0) {
+      return '${difference.inHours}h ago';
+    } else if (difference.inMinutes > 0) {
+      return '${difference.inMinutes}m ago';
+    } else {
+      return 'Just now';
+    }
   }
 
   Widget _buildStatCard(String title, String value, IconData icon, Color color) {
