@@ -117,16 +117,18 @@ supabase/
     flutter run
     ```
 
-## Testing Without Storage Setup
+## Local Analysis Mode (No Cloud Storage Required)
 
-If you get storage bucket errors during resume upload, the app will automatically fall back to **local analysis mode**. You'll still get:
+The app now works completely **without Supabase storage setup**! It automatically uses **local analysis mode** with:
 
-- ✅ AI-powered resume analysis
-- ✅ Mock interview questions
+- ✅ AI-powered resume analysis (Groq API)
+- ✅ Mock interview questions generation
 - ✅ Real-time feedback evaluation
-- ❌ Resume uploads won't be saved to cloud
+- ✅ Local caching to avoid repeated API calls
+- ✅ Resume files saved locally on device
+- ✅ Works offline after first analysis
 
-Set up Supabase Storage later using `SUPABASE_STORAGE_SETUP.md` for full functionality.
+**No Supabase bucket setup required** - just add your Groq API key and you're ready to go!
 
 ## Environment Variables
 

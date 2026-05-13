@@ -1,11 +1,10 @@
-import 'dart:io';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:interview_iq_ai/features/auth/presentation/providers/auth_provider.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import '../../../../core/providers/service_providers.dart';
 import '../../../../core/constants/app_constants.dart';
+import '../../../../core/services/local_storage_service.dart';
 import '../../domain/models/resume_analysis.dart';
 
 part 'resume_provider.g.dart';
@@ -17,46 +16,77 @@ class ResumeNotifier extends _$ResumeNotifier {
     return null;
   }
 
+  String _getUserFriendlyErrorMessage(Object error) {
+    final errorString = error.toString().toLowerCase();
+
+    if (errorString.contains('rate limit')) {
+      return 'AI service is busy. Please wait a moment and try again.';
+    } else if (errorString.contains('timeout')) {
+      return 'Request timed out. Please check your connection and try again.';
+    } else if (errorString.contains('network') || errorString.contains('connection')) {
+      return 'Network error. Please check your internet connection.';
+    } else if (errorString.contains('api key') || errorString.contains('unauthorized')) {
+      return 'Service configuration error. Please contact support.';
+    } else {
+      return 'Analysis temporarily unavailable. Using local processing mode.';
+    }
+  }
+
   Future<void> uploadAndAnalyze(PlatformFile pdfFile, String jobRole) async {
+    // Prevent duplicate requests
+    if (state.isLoading) return;
+
     state = const AsyncValue.loading();
-    state = await AsyncValue.guard(() async {
-      final pdfService = ref.read(pdfParserServiceProvider);
-      final resumeText = await pdfService.extractTextFromBytes(pdfFile.bytes!);
 
-      final supabaseService = ref.read(supabaseServiceProvider);
-      final userId = ref.read(authNotifierProvider).value?.id ?? '';
+    try {
+      // Add timeout to prevent infinite loading
+      final analysis = await Future.any([
+        _performAnalysis(pdfFile, jobRole),
+        Future.delayed(const Duration(seconds: 60), () {
+          throw Exception('Analysis timed out. Please try again.');
+        }),
+      ]);
 
-      String fileUrl;
-      String resumeId;
+      state = AsyncValue.data(analysis);
+    } catch (error, stackTrace) {
+      // Create a user-friendly error message
+      final userFriendlyError = _getUserFriendlyErrorMessage(error);
+      state = AsyncValue.error(userFriendlyError, stackTrace);
+    }
+  }
 
-      try {
-        // Try to upload to storage
-        fileUrl = await supabaseService.uploadResumeBytes(pdfFile.bytes!, pdfFile.name, userId);
-        resumeId = await supabaseService.saveResumeRecord(
-          userId,
-          fileUrl,
-          pdfFile.name,
-          jobRole,
-        );
-      } catch (storageError) {
-        // Fallback: Create a mock record if storage fails
-        fileUrl = 'local://${pdfFile.name}'; // Mock URL for local testing
-        resumeId = 'local_${DateTime.now().millisecondsSinceEpoch}';
+  String _getUserFriendlyErrorMessage(Object error) {
+    final errorString = error.toString().toLowerCase();
 
-        // Log the error but continue with analysis
-        debugPrint('Storage upload failed, continuing with local analysis: $storageError');
-      }
+    if (errorString.contains('rate limit')) {
+      return 'AI service is busy. Please wait a moment and try again.';
+    } else if (errorString.contains('timeout')) {
+      return 'Request timed out. Please check your connection and try again.';
+    } else if (errorString.contains('network') || errorString.contains('connection')) {
+      return 'Network error. Please check your internet connection.';
+    } else if (errorString.contains('api key') || errorString.contains('unauthorized')) {
+      return 'Service configuration error. Please contact support.';
+    } else {
+      return 'Analysis temporarily unavailable. Using local processing mode.';
+    }
+  }
+  }
 
-      final geminiService = ref.read(geminiServiceProvider);
-      final analysis = await geminiService.analyzeResume(resumeText, jobRole);
+  Future<ResumeAnalysis> _performAnalysis(
+      PlatformFile pdfFile, String jobRole) async {
+    final pdfService = ref.read(pdfParserServiceProvider);
+    final resumeText = await pdfService.extractTextFromBytes(pdfFile.bytes!);
 
-      // Only save analysis if we have a real resume ID
-      if (!resumeId.startsWith('local_')) {
-        await supabaseService.saveAnalysis(resumeId, analysis);
-      }
+    // Save resume locally for offline access (don't await to avoid blocking)
+    LocalStorageService.saveResumeLocally(pdfFile.bytes!, pdfFile.name);
 
-      return analysis;
-    });
+    debugPrint('Starting AI analysis with Groq...');
+
+    final groqService = ref.read(groqServiceProvider);
+    final analysis = await groqService.analyzeResume(resumeText, jobRole);
+
+    debugPrint('AI analysis completed successfully');
+    return analysis;
   }
 
   void clearAnalysis() {
