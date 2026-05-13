@@ -136,7 +136,8 @@ class AnalysisScreen extends ConsumerWidget {
 
         return Scaffold(
           appBar: AppBar(title: const Text('Resume Analysis')),
-          body: Padding(
+        body: SingleChildScrollView(
+          child: Padding(
             padding: const EdgeInsets.all(20.0),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -175,9 +176,10 @@ class AnalysisScreen extends ConsumerWidget {
                   child: Text(
                     _scoreLabel(safeAnalysis.atsScore),
                     style: TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.w600,
+                      fontSize: 18,
+                      fontWeight: FontWeight.w700,
                       color: _scoreColor(safeAnalysis.atsScore),
+                      letterSpacing: 0.5,
                     ),
                     textAlign: TextAlign.center,
                   ).animate().fadeIn(delay: 200.ms),
@@ -185,56 +187,150 @@ class AnalysisScreen extends ConsumerWidget {
                 const SizedBox(height: 32),
 
                 // Strengths Section
-                Text('Strengths',
-                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                          fontWeight: FontWeight.w700,
-                        )),
-                const SizedBox(height: 12),
+                Container(
+                  padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
+                  decoration: BoxDecoration(
+                    color: Colors.green.shade100,
+                    borderRadius: BorderRadius.circular(8),
+                    border: Border.all(color: Colors.green.shade300, width: 2),
+                  ),
+                  child: Row(
+                    children: [
+                      Icon(Icons.check_circle, color: Colors.green.shade700, size: 24),
+                      const SizedBox(width: 12),
+                      Text('Strengths',
+                          style: TextStyle(
+                            fontSize: 20,
+                            fontWeight: FontWeight.w800,
+                            color: Colors.green.shade800,
+                            letterSpacing: 0.5,
+                          )),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 16),
                 Wrap(
                   runSpacing: 10,
                   spacing: 10,
                   children: safeAnalysis.strengths
                       .where((e) => e.trim().isNotEmpty)
                       .map((s) => Chip(
-                            label: Text(s, style: const TextStyle(fontSize: 13)),
-                            backgroundColor: Colors.green.shade50,
-                            side: BorderSide(color: Colors.green.shade200),
-                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                            key: ValueKey('strength_$s'),
+                            label: Text(s, style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w600)),
+                            backgroundColor: Colors.white,
+                            side: BorderSide(color: Colors.green.shade400, width: 2),
+                            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                           ))
                       .toList(),
                 ).animate().fadeIn(delay: 400.ms),
 
-                const SizedBox(height: 28),
+                const SizedBox(height: 32),
+
+                // Weaknesses Section
+                Container(
+                  padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
+                  decoration: BoxDecoration(
+                    color: Colors.amber.shade100,
+                    borderRadius: BorderRadius.circular(8),
+                    border: Border.all(color: Colors.amber.shade300, width: 2),
+                  ),
+                  child: Row(
+                    children: [
+                      Icon(Icons.warning, color: Colors.amber.shade700, size: 24),
+                      const SizedBox(width: 12),
+                      Text('Areas Needing Attention',
+                          style: TextStyle(
+                            fontSize: 20,
+                            fontWeight: FontWeight.w800,
+                            color: Colors.amber.shade800,
+                            letterSpacing: 0.5,
+                          )),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 16),
+                Wrap(
+                  runSpacing: 10,
+                  spacing: 10,
+                  children: safeAnalysis.weaknesses
+                      .where((e) => e.trim().isNotEmpty)
+                      .map((s) => Chip(
+                            key: ValueKey('weakness_$s'),
+                            label: Text(s, style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w600)),
+                            backgroundColor: Colors.white,
+                            side: BorderSide(color: Colors.amber.shade400, width: 2),
+                            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                          ))
+                      .toList(),
+                ).animate().fadeIn(delay: 500.ms),
+
+                const SizedBox(height: 32),
 
                 // Missing Skills Section
-                Text('Areas for Improvement',
-                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                          fontWeight: FontWeight.w700,
-                        )),
-                const SizedBox(height: 12),
+                Container(
+                  padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
+                  decoration: BoxDecoration(
+                    color: Colors.orange.shade100,
+                    borderRadius: BorderRadius.circular(8),
+                    border: Border.all(color: Colors.orange.shade300, width: 2),
+                  ),
+                  child: Row(
+                    children: [
+                      Icon(Icons.build, color: Colors.orange.shade700, size: 24),
+                      const SizedBox(width: 12),
+                      Text('Missing Skills',
+                          style: TextStyle(
+                            fontSize: 20,
+                            fontWeight: FontWeight.w800,
+                            color: Colors.orange.shade800,
+                            letterSpacing: 0.5,
+                          )),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 16),
                 Wrap(
                   runSpacing: 10,
                   spacing: 10,
                   children: safeAnalysis.missingSkills
                       .where((e) => e.trim().isNotEmpty)
                       .map((s) => Chip(
-                            label: Text(s, style: const TextStyle(fontSize: 13)),
-                            backgroundColor: Colors.orange.shade50,
-                            side: BorderSide(color: Colors.orange.shade200),
-                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                            key: ValueKey('missing_$s'),
+                            label: Text(s, style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w600)),
+                            backgroundColor: Colors.white,
+                            side: BorderSide(color: Colors.orange.shade400, width: 2),
+                            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                           ))
                       .toList(),
                 ).animate().fadeIn(delay: 600.ms),
 
-                const SizedBox(height: 28),
+                const SizedBox(height: 32),
 
                 // Improvement Tips Section
-                Text('Actionable Recommendations',
-                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                          fontWeight: FontWeight.w700,
-                        )),
-                const SizedBox(height: 12),
-                Expanded(
+                Container(
+                  padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
+                  decoration: BoxDecoration(
+                    color: Colors.blue.shade100,
+                    borderRadius: BorderRadius.circular(8),
+                    border: Border.all(color: Colors.blue.shade300, width: 2),
+                  ),
+                  child: Row(
+                    children: [
+                      Icon(Icons.lightbulb, color: Colors.blue.shade700, size: 24),
+                      const SizedBox(width: 12),
+                      Text('Actionable Recommendations',
+                          style: TextStyle(
+                            fontSize: 20,
+                            fontWeight: FontWeight.w800,
+                            color: Colors.blue.shade800,
+                            letterSpacing: 0.5,
+                          )),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 16),
+                SizedBox(
+                  height: 400, // Fixed height instead of Expanded
                   child: ListView.separated(
                     itemCount: safeAnalysis.improvementTips
                         .where((e) => e.trim().isNotEmpty)
@@ -246,37 +342,53 @@ class AnalysisScreen extends ConsumerWidget {
                           .toList();
                       final tip = tips[index];
                       return Card(
-                        elevation: 2,
+                        key: ValueKey('recommendation_$index'),
+                        elevation: 4,
                         shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
+                          borderRadius: BorderRadius.circular(16),
                         ),
-                        child: Padding(
-                          padding: const EdgeInsets.all(16.0),
-                          child: Row(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Container(
-                                width: 6,
-                                height: 6,
-                                margin: const EdgeInsets.only(top: 8, right: 12),
-                                decoration: BoxDecoration(
-                                  color: Theme.of(context).colorScheme.primary,
-                                  shape: BoxShape.circle,
-                                ),
-                              ),
-                              Expanded(
-                                child: Text(
-                                  tip,
-                                  style: const TextStyle(
-                                    fontSize: 14,
-                                    height: 1.4,
+                        child: Container(
+                          decoration: BoxDecoration(
+                            gradient: LinearGradient(
+                              colors: [
+                                Colors.blue.shade50,
+                                Colors.white,
+                              ],
+                              begin: Alignment.topLeft,
+                              end: Alignment.bottomRight,
+                            ),
+                            borderRadius: BorderRadius.circular(16),
+                          ),
+                          child: Padding(
+                            padding: const EdgeInsets.all(20.0),
+                            child: Row(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Container(
+                                  width: 8,
+                                  height: 8,
+                                  margin: const EdgeInsets.only(top: 6, right: 16),
+                                  decoration: BoxDecoration(
+                                    color: Colors.blue.shade600,
+                                    shape: BoxShape.circle,
                                   ),
                                 ),
-                              ),
-                            ],
+                                Expanded(
+                                  child: Text(
+                                    tip,
+                                    style: const TextStyle(
+                                      fontSize: 16,
+                                      height: 1.6,
+                                      fontWeight: FontWeight.w600,
+                                      color: Colors.black87,
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
                           ),
                         ),
-                      ).animate().fadeIn(delay: (800 + index * 100).ms);
+                      ).animate().fadeIn(delay: (600 + index * 50).ms);
                     },
                   ),
                 ),
@@ -309,7 +421,7 @@ class AnalysisScreen extends ConsumerWidget {
                     ),
                     child: const Text('Start Mock Interview', style: TextStyle(fontSize: 16)),
                   ),
-                ).animate().fadeIn(delay: 1200.ms),
+                ).animate().fadeIn(delay: 1000.ms),
 
                 const SizedBox(height: 12),
 
@@ -325,10 +437,13 @@ class AnalysisScreen extends ConsumerWidget {
                     ),
                     child: const Text('Save Report', style: TextStyle(fontSize: 16)),
                   ),
-                ).animate().fadeIn(delay: 1400.ms),
+                ).animate().fadeIn(delay: 1100.ms),
+
+                const SizedBox(height: 32), // Extra padding at bottom for scrolling
               ],
             ),
           ),
+        ),
         );
       },
     );
