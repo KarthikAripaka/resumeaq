@@ -67,14 +67,6 @@ final routerProvider = Provider<GoRouter>((ref) {
             builder: (context, state) => const InterviewScreen(),
           ),
           GoRoute(
-            path: '/feedback',
-            builder: (context, state) => const ResultsScreen(),
-          ),
-          GoRoute(
-            path: '/plan',
-            builder: (context, state) => const ResultsScreen(),
-          ),
-          GoRoute(
             path: '/results',
             builder: (context, state) => const ResultsScreen(),
           ),
@@ -105,15 +97,10 @@ class MainShell extends StatelessWidget {
         type: BottomNavigationBarType.fixed,
         items: const [
           BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Home'),
-          BottomNavigationBarItem(icon: Icon(Icons.upload), label: 'Upload'),
-          BottomNavigationBarItem(
-              icon: Icon(Icons.analytics), label: 'Analysis'),
-          BottomNavigationBarItem(icon: Icon(Icons.chat), label: 'Interview'),
-          BottomNavigationBarItem(icon: Icon(Icons.feedback), label: 'Results'),
-          BottomNavigationBarItem(
-              icon: Icon(Icons.bar_chart), label: 'Analytics'),
-          BottomNavigationBarItem(
-              icon: Icon(Icons.settings), label: 'Settings'),
+          BottomNavigationBarItem(icon: Icon(Icons.upload_file), label: 'Upload'),
+          BottomNavigationBarItem(icon: Icon(Icons.assessment), label: 'Analysis'),
+          BottomNavigationBarItem(icon: Icon(Icons.forum), label: 'Interview'),
+          BottomNavigationBarItem(icon: Icon(Icons.settings), label: 'Settings'),
         ],
         onTap: (index) {
           switch (index) {
@@ -130,12 +117,6 @@ class MainShell extends StatelessWidget {
               context.go('/interview');
               break;
             case 4:
-              context.go('/results');
-              break;
-            case 5:
-              context.go('/analytics');
-              break;
-            case 6:
               context.go('/settings');
               break;
           }
