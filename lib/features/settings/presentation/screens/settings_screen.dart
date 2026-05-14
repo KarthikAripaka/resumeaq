@@ -1,16 +1,22 @@
+import 'dart:convert';
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:interview_iq_ai/features/auth/presentation/providers/auth_provider.dart';
-import 'package:interview_iq_ai/features/analytics/presentation/providers/analytics_provider.dart';
-import 'package:interview_iq_ai/core/providers/service_providers.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:share_plus/share_plus.dart';
-import 'package:shared_preferences/shared_preferences.dart';
-import 'dart:convert';
-import 'dart:io';
+import 'package:interview_iq_ai/features/analytics/presentation/providers/analytics_provider.dart';
+import 'package:interview_iq_ai/core/providers/service_providers.dart';
+
+class _LocalUser {
+  final String email;
+
+  const _LocalUser({required this.email});
+
+  String get id => 'local_user';
+}
 
 class SettingsScreen extends ConsumerStatefulWidget {
   const SettingsScreen({super.key});
@@ -32,31 +38,23 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   }
 
   Future<void> _loadSettings() async {
-    final prefs = await SharedPreferences.getInstance();
+    // Offline-friendly: SharedPreferences removed.
     if (!mounted) return;
-
     setState(() {
-      _notificationsEnabled = prefs.getBool('notifications_enabled') ?? true;
-      _darkModeEnabled = prefs.getBool('dark_mode_enabled') ?? false;
-      _autoSaveEnabled = prefs.getBool('auto_save_enabled') ?? true;
-      _selectedLanguage = prefs.getString('language') ?? 'English';
+      _notificationsEnabled = true;
+      _darkModeEnabled = false;
+      _autoSaveEnabled = true;
+      _selectedLanguage = 'English';
     });
   }
 
   Future<void> _saveSetting(String key, dynamic value) async {
-    final prefs = await SharedPreferences.getInstance();
-    if (value is bool) {
-      await prefs.setBool(key, value);
-    } else if (value is String) {
-      await prefs.setString(key, value);
-    } else if (value == null) {
-      await prefs.remove(key);
-    }
+    // No-op in offline mode (SharedPreferences removed).
   }
 
   Future<void> _exportUserData() async {
     try {
-      final user = ref.read(authNotifierProvider).value;
+      const user = _LocalUser(email: 'guest@example.com');
       if (user == null) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Please sign in to export data')),
@@ -111,7 +109,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
         }).toList(),
       };
 
-      final jsonString = JsonEncoder.withIndent('  ').convert(exportData);
+      final jsonString = const JsonEncoder.withIndent('  ').convert(exportData);
 
       final directory = await getApplicationDocumentsDirectory();
       final timestamp = DateTime.now().millisecondsSinceEpoch;
@@ -291,8 +289,8 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
       context: context,
       builder: (context) => AlertDialog(
         title: const Text('Privacy Policy'),
-        content: SingleChildScrollView(
-          child: const Text(
+        content: const SingleChildScrollView(
+          child: Text(
             'Privacy Policy for InterviewIQ AI\n\n'
             'Effective Date: January 1, 2024\n\n'
             '1. Information We Collect\n'
@@ -333,8 +331,8 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
       context: context,
       builder: (context) => AlertDialog(
         title: const Text('Terms of Service'),
-        content: SingleChildScrollView(
-          child: const Text(
+        content: const SingleChildScrollView(
+          child: Text(
             'Terms of Service for InterviewIQ AI\n\n'
             'Effective Date: January 1, 2024\n\n'
             '1. Acceptance of Terms\n'
@@ -410,7 +408,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final user = ref.watch(authNotifierProvider).value;
+    const user = _LocalUser(email: 'guest@example.com');
 
     return Scaffold(
       appBar: AppBar(title: const Text('Settings')),
@@ -715,7 +713,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                     );
 
                     if (confirmed == true) {
-                      await ref.read(authNotifierProvider.notifier).signOut();
+                      // No auth to sign out
                       if (!mounted) return;
                       context.go('/auth');
                     }

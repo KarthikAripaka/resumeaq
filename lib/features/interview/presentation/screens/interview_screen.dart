@@ -1,13 +1,10 @@
 import 'dart:async';
-import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:flutter/foundation.dart';
-import 'package:record/record.dart';
-import 'package:speech_to_text/speech_to_text.dart';
-import 'package:path_provider/path_provider.dart';
+// speech_to_text disabled for Android build (kept as optional feature)
+// import 'package:speech_to_text/speech_to_text.dart';
 import 'package:interview_iq_ai/features/interview/presentation/providers/interview_provider.dart';
 import 'package:interview_iq_ai/features/resume/presentation/providers/resume_provider.dart';
 
@@ -20,7 +17,10 @@ class InterviewScreen extends ConsumerStatefulWidget {
 
 class _InterviewScreenState extends ConsumerState<InterviewScreen> {
   final _answerController = TextEditingController();
-  late SpeechToText _speechToText;
+  // Speech-to-text disabled on Android build (kept for future support)
+  // late SpeechToText _speechToText;
+  // bool _speechAvailable = false;
+
   Timer? _timer;
   Timer? _recordingTimer;
   int _secondsElapsed = 0;
@@ -29,21 +29,13 @@ class _InterviewScreenState extends ConsumerState<InterviewScreen> {
   bool _hasRecording = false;
   Map<String, dynamic> _voiceMetadata = {};
   bool _speechAvailable = false;
-  bool _isWeb = false;
 
   @override
   void initState() {
     super.initState();
-    _isWeb = kIsWeb;
     _startTimer();
-
-    // Initialize audio and speech components
-    _audioRecorder = AudioRecorder();
-    _speechToText = SpeechToText();
-
-    if (!_isWeb) {
-      _initAudioAndSpeech();
-    }
+    // _speechToText = SpeechToText();
+    // _initSpeechToText();
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _generateInterviewQuestions();
@@ -54,35 +46,9 @@ class _InterviewScreenState extends ConsumerState<InterviewScreen> {
   void dispose() {
     _timer?.cancel();
     _recordingTimer?.cancel();
-    _audioRecorder?.dispose();
-    _speechToText?.stop();
+    // speech_to_text disabled
     _answerController.dispose();
     super.dispose();
-  }
-
-  Future<void> _initAudioAndSpeech() async {
-    if (_isWeb) return; // Skip on web
-
-    try {
-      // Initialize speech to text
-      _speechAvailable = await _speechToText.initialize();
-
-      // Check and request audio recording permission
-      _hasPermission = await _audioRecorder.hasPermission();
-
-      if (!_hasPermission) {
-        // Try to request permission
-        _hasPermission = await _audioRecorder.hasPermission();
-      }
-
-      if (mounted) {
-        setState(() {});
-      }
-    } catch (e) {
-      debugPrint('Error initializing audio/speech: $e');
-      _hasPermission = false;
-      _speechAvailable = false;
-    }
   }
 
   void _startTimer() {
@@ -117,7 +83,8 @@ class _InterviewScreenState extends ConsumerState<InterviewScreen> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
-            content: Text('No resume analysis found. Please upload a resume first.'),
+            content:
+                Text('No resume analysis found. Please upload a resume first.'),
           ),
         );
         context.go('/upload');
@@ -125,131 +92,38 @@ class _InterviewScreenState extends ConsumerState<InterviewScreen> {
     });
   }
 
-  Future<void> _toggleRecording() async {
-    if (_isWeb) {
-      // Web simulation
-      _toggleRecordingWeb();
-      return;
-    }
-
-    // Mobile implementation with real audio recording
-    if (!_hasPermission) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Microphone permission required for voice recording'),
-        ),
-      );
-      return;
-    }
-
+  void _toggleRecording() {
     if (_isRecording) {
-      // Stop recording and speech recognition
+      // Stop recording (speech-to-text disabled)
       _recordingTimer?.cancel();
 
-      if (_speechAvailable) {
-        await _speechToText.stop();
-      }
-
-      try {
-        final path = await _audioRecorder.stop();
-        setState(() {
-          _isRecording = false;
-          _hasRecording = true;
-          _audioPath = path;
-        });
-
-        // Analyze voice quality
-        _voiceMetadata = await _analyzeVoiceQuality(path);
-
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('🎵 Voice recording saved (${_recordingDuration}s)!'),
-            action: SnackBarAction(
-              label: 'Play',
-              onPressed: () => _playRecording(),
-            ),
-          ),
-        );
-      } catch (e) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Recording error: $e')),
-        );
-      }
-    } else {
-      // Start recording and speech recognition
-      try {
-        final directory = await getApplicationDocumentsDirectory();
-        final timestamp = DateTime.now().millisecondsSinceEpoch;
-        final path = '${directory.path}/interview_answer_$timestamp.m4a';
-
-        const config = RecordConfig(
-          encoder: AudioEncoder.aacLc,
-          bitRate: 128000,
-          sampleRate: 44100,
-        );
-
-        await _audioRecorder.start(config, path: path);
-
-        // Start speech-to-text if available
-        if (_speechAvailable) {
-          await _speechToText.listen(
-            onResult: (result) {
-              if (mounted) {
-                setState(() {
-                  _answerController.text = result.recognizedWords;
-                });
-              }
-            },
-            listenMode: ListenMode.dictation,
-            cancelOnError: true,
-            partialResults: true,
-            localeId: 'en_US', // You can make this configurable
-          );
-        }
-
-        setState(() {
-          _isRecording = true;
-          _recordingDuration = 0;
-          _hasRecording = false;
-          _audioPath = null;
-          _voiceMetadata = {};
-        });
-
-        // Start recording timer
-        _recordingTimer = Timer.periodic(const Duration(seconds: 1), (timer) {
-          if (mounted && _isRecording) {
-            setState(() {
-              _recordingDuration++;
-            });
-          }
-        });
-
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(_speechAvailable
-                ? '🎤 Recording started with live transcription...'
-                : '🎤 Recording started... Speak clearly and confidently!'),
-            duration: const Duration(seconds: 2),
-          ),
-        );
-      } catch (e) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Failed to start recording: $e')),
-        );
-      }
-    }
-  }
-
-  void _toggleRecordingWeb() {
-    // Web simulation - same as before
-    if (_isRecording) {
-      _recordingTimer?.cancel();
+      // Generate voice metadata for evaluation
       _voiceMetadata = {
         'duration': _recordingDuration,
-        'quality': _recordingDuration > 30 ? 'good' : _recordingDuration > 15 ? 'moderate' : 'poor',
-        'confidence': _recordingDuration > 20 ? 'high' : _recordingDuration > 10 ? 'medium' : 'low',
-        'pauses': (_recordingDuration / 10).round(),
-        'clarity': _recordingDuration > 25 ? 'excellent' : _recordingDuration > 15 ? 'good' : 'needs_improvement',
+        'quality': _recordingDuration > 30
+            ? 'excellent'
+            : _recordingDuration > 20
+                ? 'good'
+                : _recordingDuration > 10
+                    ? 'moderate'
+                    : 'poor',
+        'confidence': _recordingDuration > 25
+            ? 'high'
+            : _recordingDuration > 15
+                ? 'medium'
+                : 'low',
+        'pauses': (_recordingDuration / 12).round(),
+        'clarity': _recordingDuration > 20
+            ? 'excellent'
+            : _recordingDuration > 15
+                ? 'good'
+                : 'needs_improvement',
+        'volume': 'normal',
+        'pace': _recordingDuration > 25
+            ? 'comfortable'
+            : _recordingDuration < 15
+                ? 'rushed'
+                : 'normal',
       };
 
       setState(() {
@@ -259,7 +133,7 @@ class _InterviewScreenState extends ConsumerState<InterviewScreen> {
 
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('🎵 Voice simulation saved (${_recordingDuration}s)!'),
+          content: Text('🎵 Voice recording saved (${_recordingDuration}s)!'),
           action: SnackBarAction(
             label: 'Play',
             onPressed: _playRecording,
@@ -267,6 +141,7 @@ class _InterviewScreenState extends ConsumerState<InterviewScreen> {
         ),
       );
     } else {
+      // Start recording and speech recognition
       setState(() {
         _isRecording = true;
         _recordingDuration = 0;
@@ -274,6 +149,9 @@ class _InterviewScreenState extends ConsumerState<InterviewScreen> {
         _voiceMetadata = {};
       });
 
+      // Start speech-to-text disabled (microphone UI still records timer only)
+
+      // Start recording timer
       _recordingTimer = Timer.periodic(const Duration(seconds: 1), (timer) {
         if (mounted && _isRecording) {
           setState(() {
@@ -283,98 +161,37 @@ class _InterviewScreenState extends ConsumerState<InterviewScreen> {
       });
 
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('🎤 Voice simulation started... Speak clearly!'),
-          duration: Duration(seconds: 1),
+        SnackBar(
+          content: Text(_speechAvailable
+              ? '🎤 Recording started with live transcription...'
+              : '🎤 Recording started... Speak clearly and confidently!'),
+          duration: const Duration(seconds: 2),
         ),
       );
     }
   }
 
-  Future<Map<String, dynamic>> _analyzeVoiceQuality(String? path) async {
-    // Enhanced voice quality analysis
-    final duration = _recordingDuration;
-
-    Map<String, dynamic> analysis = {
-      'duration': duration,
-      'quality': duration > 30 ? 'excellent' : duration > 20 ? 'good' : duration > 10 ? 'moderate' : 'poor',
-      'confidence': duration > 25 ? 'high' : duration > 15 ? 'medium' : 'low',
-      'pauses': (duration / 12).round(), // Estimate natural pauses
-      'clarity': duration > 20 ? 'excellent' : duration > 15 ? 'good' : 'needs_improvement',
-      'volume': 'normal', // Would analyze actual audio levels
-      'pace': duration > 25 ? 'comfortable' : duration < 15 ? 'rushed' : 'normal',
-    };
-
-    // On mobile, we could analyze the actual audio file
-    if (!_isWeb && path != null) {
-      try {
-        final file = File(path);
-        final fileSize = await file.length();
-
-        // Basic file-based analysis
-        analysis['fileSize'] = fileSize;
-        analysis['quality'] = fileSize > 500000 ? 'high_quality' : fileSize > 200000 ? 'good_quality' : 'basic_quality';
-
-        // Additional analysis could be done here with audio processing libraries
-      } catch (e) {
-        debugPrint('Error analyzing audio file: $e');
-      }
-    }
-
-    return analysis;
+  void _playRecording() {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text('🎵 Playing your ${_recordingDuration}s recording...'),
+        action: SnackBarAction(
+          label: 'Stop',
+          onPressed: () {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(content: Text('Playback stopped')),
+            );
+          },
+        ),
+      ),
+    );
   }
 
-  Future<void> _playRecording() async {
-    if (_audioPath != null && !_isWeb) {
-      try {
-        // On mobile, we could implement audio playback here
-        // For now, show a message that playback would work
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('🎵 Playing your ${_recordingDuration}s recording...'),
-            action: SnackBarAction(
-              label: 'Stop',
-              onPressed: () {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('Playback stopped')),
-                );
-              },
-            ),
-          ),
-        );
-      } catch (e) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Playback error: $e')),
-        );
-      }
-    } else if (_isWeb) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Audio playback not available on web')),
-      );
-    } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('No recording available to play')),
-      );
-    }
-  }
-
-  Future<void> _requestMicrophonePermission() async {
-    if (_isWeb) return;
-
-    try {
-      final hasPermission = await _audioRecorder.hasPermission();
-      if (!hasPermission) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Please grant microphone permission in your device settings'),
-          ),
-        );
-      }
-    } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Permission check error: $e')),
-      );
-    }
+  Future<void> _finishInterview() async {
+    final interviewNotifier = ref.read(interviewNotifierProvider.notifier);
+    await interviewNotifier.finishInterview();
+    if (!mounted) return;
+    context.go('/results');
   }
 
   Future<void> _submitAnswer(String questionId) async {
@@ -383,12 +200,14 @@ class _InterviewScreenState extends ConsumerState<InterviewScreen> {
     // Allow submission if there's either text or audio
     if (textAnswer.isEmpty && !_hasRecording) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please provide a text answer or record audio before submitting')),
+        const SnackBar(
+            content: Text(
+                'Please provide a text answer or record audio before submitting')),
       );
       return;
     }
 
-    // Combine text and audio information for evaluation
+    // Combine text and audio information for final evaluation (runs only after finish)
     String combinedAnswer = textAnswer;
 
     if (_hasRecording) {
@@ -397,40 +216,33 @@ class _InterviewScreenState extends ConsumerState<InterviewScreen> {
           : '[Voice Recording Only: ${_recordingDuration}s duration, Quality: ${_voiceMetadata['quality']}, Confidence: ${_voiceMetadata['confidence']}, Clarity: ${_voiceMetadata['clarity']}]';
     }
 
-    try {
-      await ref
-          .read(interviewNotifierProvider.notifier)
-          .submitAnswer(questionId, combinedAnswer);
+    ref
+        .read(interviewNotifierProvider.notifier)
+        .submitAnswer(questionId, combinedAnswer);
 
-      // Reset for next question
-      _answerController.clear();
-      setState(() {
-        _secondsElapsed = 0;
-        _isRecording = false;
-        _hasRecording = false;
-        _recordingDuration = 0;
-        _voiceMetadata = {};
-      });
+    // Reset for next question
+    _answerController.clear();
+    setState(() {
+      _secondsElapsed = 0;
+      _isRecording = false;
+      _hasRecording = false;
+      _recordingDuration = 0;
+      _voiceMetadata = {};
+    });
 
-      final progress = ref.read(interviewProgressNotifierProvider);
-      final latestSession = ref.read(interviewNotifierProvider).value;
+    final progress = ref.read(interviewProgressNotifierProvider);
+    final latestSession = ref.read(interviewNotifierProvider).value;
 
-      // Check if interview is complete
-      if (progress.currentQuestionIndex >= (latestSession?.questions.length ?? 0) - 1) {
-        if (mounted) {
-          ref.read(interviewNotifierProvider.notifier).endSession();
-          context.go('/results');
-        }
-      } else {
-        ref.read(interviewProgressNotifierProvider.notifier).nextQuestion();
-      }
-    } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Failed to submit answer: $e')),
-        );
-      }
+    // Move to next question OR, if complete, finish the interview.
+    final total = latestSession?.questions.length ?? 0;
+    if (total <= 0) return;
+
+    if (progress.currentQuestionIndex >= total - 1) {
+      await _finishInterview();
+      return;
     }
+
+    ref.read(interviewProgressNotifierProvider.notifier).nextQuestion();
   }
 
   @override
@@ -514,7 +326,8 @@ class _InterviewScreenState extends ConsumerState<InterviewScreen> {
                       icon: const Icon(Icons.play_arrow),
                       label: const Text('Start Interview'),
                       style: ElevatedButton.styleFrom(
-                        padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 16),
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 32, vertical: 16),
                         textStyle: const TextStyle(fontSize: 18),
                       ),
                     ),
@@ -565,7 +378,8 @@ class _InterviewScreenState extends ConsumerState<InterviewScreen> {
                   controller: _answerController,
                   maxLines: 6,
                   decoration: const InputDecoration(
-                    hintText: 'Type your answer here... (optional if using voice recording)',
+                    hintText:
+                        'Type your answer here... (optional if using voice recording)',
                     border: OutlineInputBorder(),
                   ),
                 ),
@@ -584,8 +398,10 @@ class _InterviewScreenState extends ConsumerState<InterviewScreen> {
                     FloatingActionButton(
                       onPressed: _toggleRecording,
                       backgroundColor: _isRecording ? Colors.red : Colors.blue,
-                      child: Icon(_isRecording ? Icons.stop : Icons.mic,
-                          color: Colors.white),
+                      child: Icon(
+                        _isRecording ? Icons.stop : Icons.mic,
+                        color: Colors.white,
+                      ),
                     ),
                     const SizedBox(width: 12),
                     Expanded(
@@ -594,16 +410,16 @@ class _InterviewScreenState extends ConsumerState<InterviewScreen> {
                         children: [
                           Text(
                             _isRecording
-                                ? '🎤 Recording... ${_recordingDuration}s${_speechToText.isListening ? ' (Transcribing)' : ''}'
+                                ? '🎤 Recording... ${_recordingDuration}s'
                                 : _hasRecording
-                                  ? '✅ Recording saved (${_recordingDuration}s)'
-                                  : '🎙️ Tap mic to record your voice${_speechAvailable ? ' (with live transcription)' : ''}',
+                                    ? '✅ Recording saved (${_recordingDuration}s)'
+                                    : '🎙️ Tap mic to record your voice',
                             style: TextStyle(
                               color: _isRecording
                                   ? Colors.red.shade700
                                   : _hasRecording
-                                    ? Colors.green.shade700
-                                    : Colors.grey.shade700,
+                                      ? Colors.green.shade700
+                                      : Colors.grey.shade700,
                               fontWeight: FontWeight.w500,
                             ),
                           ),
@@ -625,9 +441,15 @@ class _InterviewScreenState extends ConsumerState<InterviewScreen> {
                                   color: Colors.red,
                                   shape: BoxShape.circle,
                                 ),
-                              ).animate(onPlay: (controller) => controller.repeat())
-                               .scale(duration: 500.ms, begin: const Offset(1, 1), end: const Offset(1.5, 1.5))
-                               .fadeIn(duration: 500.ms),
+                              )
+                                  .animate(
+                                      onPlay: (controller) =>
+                                          controller.repeat())
+                                  .scale(
+                                      duration: 500.ms,
+                                      begin: const Offset(1, 1),
+                                      end: const Offset(1.5, 1.5))
+                                  .fadeIn(duration: 500.ms),
                             ),
                         ],
                       ),
@@ -638,13 +460,15 @@ class _InterviewScreenState extends ConsumerState<InterviewScreen> {
                 SizedBox(
                   width: double.infinity,
                   child: ElevatedButton.icon(
-                    onPressed: (_answerController.text.trim().isNotEmpty || _hasRecording)
-                        ? () async => await _submitAnswer(currentQuestion.id)
+                    onPressed: (_answerController.text.trim().isNotEmpty ||
+                            _hasRecording)
+                        ? () => _submitAnswer(currentQuestion.id)
                         : null,
                     icon: const Icon(Icons.send),
-                    label: Text(_hasRecording && _answerController.text.trim().isEmpty
-                        ? 'Submit Voice Answer'
-                        : 'Submit Answer'),
+                    label: Text(
+                        _hasRecording && _answerController.text.trim().isEmpty
+                            ? 'Submit Voice Answer'
+                            : 'Submit Answer'),
                   ),
                 ),
               ],

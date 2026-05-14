@@ -4,7 +4,8 @@ class LoadingStepsWidget extends StatelessWidget {
   final List<String> steps;
   final int currentStep;
 
-  const LoadingStepsWidget({super.key, required this.steps, required this.currentStep});
+  const LoadingStepsWidget(
+      {super.key, required this.steps, required this.currentStep});
 
   @override
   Widget build(BuildContext context) {
@@ -17,7 +18,7 @@ class LoadingStepsWidget extends StatelessWidget {
               ? const Icon(Icons.check_circle, color: Colors.green)
               : isCurrent
                   ? const CircularProgressIndicator()
-                  : Icon(Icons.circle, color: Colors.grey),
+                  : const Icon(Icons.circle, color: Colors.grey),
           title: Text(steps[index]),
         );
       }),

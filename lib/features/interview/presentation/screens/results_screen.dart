@@ -20,7 +20,8 @@ class _ResultsScreenState extends ConsumerState<ResultsScreen> {
   @override
   void initState() {
     super.initState();
-    _confettiController = ConfettiController(duration: const Duration(seconds: 2));
+    _confettiController =
+        ConfettiController(duration: const Duration(seconds: 2));
   }
 
   @override
@@ -127,7 +128,9 @@ class _ResultsScreenState extends ConsumerState<ResultsScreen> {
                     );
                   }
 
-                  final overallScore = feedbacks.map((f) => f.score).reduce((a, b) => a + b) / feedbacks.length;
+                  final overallScore =
+                      feedbacks.map((f) => f.score).reduce((a, b) => a + b) /
+                          feedbacks.length;
 
                   // Trigger confetti for good scores
                   if (overallScore >= 8.0) {
@@ -145,8 +148,14 @@ class _ResultsScreenState extends ConsumerState<ResultsScreen> {
                             colors: overallScore >= 8.0
                                 ? [Colors.green.shade400, Colors.green.shade600]
                                 : overallScore >= 6.0
-                                    ? [Colors.blue.shade400, Colors.blue.shade600]
-                                    : [Colors.orange.shade400, Colors.orange.shade600],
+                                    ? [
+                                        Colors.blue.shade400,
+                                        Colors.blue.shade600
+                                      ]
+                                    : [
+                                        Colors.orange.shade400,
+                                        Colors.orange.shade600
+                                      ],
                             begin: Alignment.topLeft,
                             end: Alignment.bottomRight,
                           ),
@@ -229,7 +238,12 @@ class _ResultsScreenState extends ConsumerState<ResultsScreen> {
                                 sideTitles: SideTitles(
                                   showTitles: true,
                                   getTitlesWidget: (value, meta) {
-                                    const categories = ['HR', 'Technical', 'DSA', 'Project'];
+                                    const categories = [
+                                      'HR',
+                                      'Technical',
+                                      'DSA',
+                                      'Project'
+                                    ];
                                     if (value.toInt() < categories.length) {
                                       return Padding(
                                         padding: const EdgeInsets.only(top: 8),
@@ -254,10 +268,12 @@ class _ResultsScreenState extends ConsumerState<ResultsScreen> {
                                   },
                                 ),
                               ),
-                              topTitles: AxisTitles(sideTitles: SideTitles(showTitles: false)),
-                              rightTitles: AxisTitles(sideTitles: SideTitles(showTitles: false)),
+                              topTitles: const AxisTitles(
+                                  sideTitles: SideTitles(showTitles: false)),
+                              rightTitles: const AxisTitles(
+                                  sideTitles: SideTitles(showTitles: false)),
                             ),
-                            gridData: FlGridData(show: false),
+                            gridData: const FlGridData(show: false),
                             borderData: FlBorderData(show: false),
                             barGroups: _generateBarGroups(feedbacks),
                           ),
@@ -299,18 +315,22 @@ class _ResultsScreenState extends ConsumerState<ResultsScreen> {
                                 children: [
                                   Row(
                                     children: [
-                                Container(
-                                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                                  decoration: BoxDecoration(
-                                    color: _getScoreColor(feedback.score.toDouble()),
-                                    borderRadius: BorderRadius.circular(12),
-                                  ),
+                                      Container(
+                                        padding: const EdgeInsets.symmetric(
+                                            horizontal: 8, vertical: 4),
+                                        decoration: BoxDecoration(
+                                          color: _getScoreColor(
+                                              feedback.score.toDouble()),
+                                          borderRadius:
+                                              BorderRadius.circular(12),
+                                        ),
                                         child: Text(
                                           '${feedback.score}/10',
                                           style: TextStyle(
                                             fontSize: 14,
                                             fontWeight: FontWeight.w600,
-                                    color: _getScoreColor(feedback.score.toDouble()),
+                                            color: _getScoreColor(
+                                                feedback.score.toDouble()),
                                           ),
                                         ),
                                       ),
@@ -335,16 +355,20 @@ class _ResultsScreenState extends ConsumerState<ResultsScreen> {
                                     ),
                                   ),
                                   const SizedBox(height: 12),
-                                  _buildFeedbackSection('Correctness', feedback.correctness),
+                                  _buildFeedbackSection(
+                                      'Correctness', feedback.correctness),
                                   const SizedBox(height: 8),
-                                  _buildFeedbackSection('Communication', feedback.communication),
+                                  _buildFeedbackSection(
+                                      'Communication', feedback.communication),
                                   if (feedback.confidenceTip.isNotEmpty) ...[
                                     const SizedBox(height: 8),
-                                    _buildFeedbackSection('Confidence Tip', feedback.confidenceTip),
+                                    _buildFeedbackSection('Confidence Tip',
+                                        feedback.confidenceTip),
                                   ],
                                   if (feedback.idealAnswerHints.isNotEmpty) ...[
                                     const SizedBox(height: 8),
-                                    _buildFeedbackSection('Ideal Answer Hints', feedback.idealAnswerHints),
+                                    _buildFeedbackSection('Ideal Answer Hints',
+                                        feedback.idealAnswerHints),
                                   ],
                                 ],
                               ),
@@ -364,7 +388,8 @@ class _ResultsScreenState extends ConsumerState<ResultsScreen> {
                               icon: const Icon(Icons.refresh),
                               label: const Text('Practice Again'),
                               style: ElevatedButton.styleFrom(
-                                padding: const EdgeInsets.symmetric(vertical: 16),
+                                padding:
+                                    const EdgeInsets.symmetric(vertical: 16),
                               ),
                             ),
                           ),
@@ -375,7 +400,8 @@ class _ResultsScreenState extends ConsumerState<ResultsScreen> {
                               icon: const Icon(Icons.analytics),
                               label: const Text('View Analytics'),
                               style: OutlinedButton.styleFrom(
-                                padding: const EdgeInsets.symmetric(vertical: 16),
+                                padding:
+                                    const EdgeInsets.symmetric(vertical: 16),
                               ),
                             ),
                           ),
@@ -465,9 +491,11 @@ class _ResultsScreenState extends ConsumerState<ResultsScreen> {
     return List.generate(categories.length, (index) {
       final category = categories[index];
       final scores = categoryScores[category]!;
-      final avgScore = scores.isNotEmpty ? scores.reduce((a, b) => a + b) / scores.length : 0.0;
+      final avgScore = scores.isNotEmpty
+          ? scores.reduce((a, b) => a + b) / scores.length
+          : 0.0;
 
-      return           BarChartGroupData(
+      return BarChartGroupData(
         x: index,
         barRods: [
           BarChartRodData(
@@ -530,7 +558,8 @@ class _ResultsScreenState extends ConsumerState<ResultsScreen> {
       return;
     }
 
-    final overallScore = feedbacks.map((f) => f.score).reduce((a, b) => a + b) / feedbacks.length;
+    final overallScore = feedbacks.map((f) => f.score).reduce((a, b) => a + b) /
+        feedbacks.length;
 
     final shareText = '''
 🎯 InterviewIQ AI - Interview Results
@@ -554,7 +583,8 @@ ${feedbacks.where((f) => f.score < 7).map((f) => '• ${f.correctness.split('.')
 Continue practicing with InterviewIQ AI for better results!
 
 #InterviewPrep #InterviewIQ #CareerGrowth
-    '''.trim();
+    '''
+        .trim();
 
     try {
       await Share.share(

@@ -19,14 +19,14 @@ class PdfParserService {
     document.dispose();
 
     if (text.trim().isEmpty) {
-      throw PdfParseException('No text extracted from PDF');
+      throw PdfParseException('No text found in PDF. Please ensure your resume is a text-based PDF (not scanned images). If it\'s a scanned document, consider converting it to editable text format.');
     }
 
     final cleanedText = _cleanText(text);
     return cleanedText.length > 8000 ? cleanedText.substring(0, 8000) : cleanedText;
   }
 
-  Future<String> extractTextFromBytes(List<int> pdfBytes) async {
+  static Future<String> extractTextFromBytes(List<int> pdfBytes) async {
     if (pdfBytes.isEmpty) {
       throw PdfParseException('PDF bytes are empty');
     }
@@ -37,14 +37,14 @@ class PdfParserService {
     document.dispose();
 
     if (text.trim().isEmpty) {
-      throw PdfParseException('No text extracted from PDF');
+      throw PdfParseException('No text found in PDF. Please ensure your resume is a text-based PDF (not scanned images). If it\'s a scanned document, consider converting it to editable text format.');
     }
 
     final cleanedText = _cleanText(text);
     return cleanedText.length > 8000 ? cleanedText.substring(0, 8000) : cleanedText;
   }
 
-  String _cleanText(String text) {
+  static String _cleanText(String text) {
     // Remove excessive whitespace and normalize newlines
     return text
         .replaceAll(RegExp(r'\s+'), ' ')

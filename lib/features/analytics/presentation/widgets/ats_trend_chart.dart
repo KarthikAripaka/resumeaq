@@ -25,7 +25,7 @@ class ATSTrendChart extends StatelessWidget {
               },
             ),
           ),
-          leftTitles: AxisTitles(
+          leftTitles: const AxisTitles(
             sideTitles: SideTitles(
               showTitles: true,
               reservedSize: 40,
@@ -39,14 +39,18 @@ class ATSTrendChart extends StatelessWidget {
         maxY: 100,
         lineBarsData: [
           LineChartBarData(
-            spots: List.generate(scores.length, (index) => FlSpot(index.toDouble(), scores[index])),
+            spots: List.generate(scores.length,
+                (index) => FlSpot(index.toDouble(), scores[index])),
             isCurved: true,
             color: Colors.blue,
             barWidth: 4,
             belowBarData: BarAreaData(
               show: true,
               gradient: LinearGradient(
-                colors: [Colors.blue.withValues(alpha: 0.3), Colors.blue.withValues(alpha: 0.1)],
+                colors: [
+                  Colors.blue.withValues(alpha: 0.3),
+                  Colors.blue.withValues(alpha: 0.1)
+                ],
                 begin: Alignment.topCenter,
                 end: Alignment.bottomCenter,
               ),
@@ -59,7 +63,7 @@ class ATSTrendChart extends StatelessWidget {
             getTooltipItems: (touchedSpots) {
               return touchedSpots.map((spot) {
                 return LineTooltipItem(
-                  '${spot.y.toStringAsFixed(0)}',
+                  spot.y.toStringAsFixed(0),
                   const TextStyle(color: Colors.white),
                 );
               }).toList();

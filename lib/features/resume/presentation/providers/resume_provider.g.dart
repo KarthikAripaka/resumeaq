@@ -6,7 +6,7 @@ part of 'resume_provider.dart';
 // RiverpodGenerator
 // **************************************************************************
 
-String _$resumeNotifierHash() => r'bee2907ffdb08aefdb8b607c64eb15dc514330d9';
+String _$resumeNotifierHash() => r'40717795fb21acbe2115e4086caeec6c63202f0a';
 
 /// See also [ResumeNotifier].
 @ProviderFor(ResumeNotifier)

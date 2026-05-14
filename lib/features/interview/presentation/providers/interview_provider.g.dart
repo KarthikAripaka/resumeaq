@@ -6,7 +6,7 @@ part of 'interview_provider.dart';
 // RiverpodGenerator
 // **************************************************************************
 
-String _$interviewNotifierHash() => r'8fdf0463dd9d70fa152e636de259ae6c25eb616e';
+String _$interviewNotifierHash() => r'1adbbed060dfe727089698a48c83553e25aa64d9';
 
 /// See also [InterviewNotifier].
 @ProviderFor(InterviewNotifier)

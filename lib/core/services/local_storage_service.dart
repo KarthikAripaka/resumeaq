@@ -3,13 +3,14 @@ import 'package:path_provider/path_provider.dart';
 import 'package:flutter/foundation.dart';
 
 class LocalStorageService {
-  static Future<String?> saveResumeLocally(List<int> bytes, String fileName) async {
-    try {
-      if (kIsWeb) {
-        // On web, we can't save files locally, so just return null
-        return null;
-      }
+  static Future<String?> saveResumeLocally(
+      List<int> bytes, String fileName) async {
+    if (kIsWeb) {
+      // On web, we can't save files locally, so just return null
+      return null;
+    }
 
+    try {
       final directory = await getApplicationDocumentsDirectory();
       final resumesDir = Directory('${directory.path}/resumes');
 
@@ -18,7 +19,8 @@ class LocalStorageService {
         await resumesDir.create(recursive: true);
       }
 
-      final filePath = '${resumesDir.path}/${DateTime.now().millisecondsSinceEpoch}_${fileName}';
+      final filePath =
+          '${resumesDir.path}/${DateTime.now().millisecondsSinceEpoch}_$fileName';
       final file = File(filePath);
 
       await file.writeAsBytes(bytes);

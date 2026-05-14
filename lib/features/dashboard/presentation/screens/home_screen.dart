@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:interview_iq_ai/features/auth/presentation/providers/auth_provider.dart';
+
 import 'package:interview_iq_ai/features/analytics/presentation/providers/analytics_provider.dart';
 import 'package:interview_iq_ai/core/providers/service_providers.dart';
 
@@ -11,13 +11,12 @@ class HomeScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final user = ref.watch(authNotifierProvider).value;
     final userStats = ref.watch(userStatsProvider);
     final recentSessions = ref.watch(sessionHistoryProvider);
 
     return Scaffold(
       appBar: AppBar(
-        title: Text('Welcome back, ${user?.email?.split('@')[0] ?? 'User'}!'),
+        title: const Text('Welcome back!'),
         actions: [
           Consumer(
             builder: (context, ref, child) {
@@ -105,7 +104,8 @@ class HomeScreen extends ConsumerWidget {
                       style: ElevatedButton.styleFrom(
                         backgroundColor: Colors.white,
                         foregroundColor: Colors.purple.shade600,
-                        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 20, vertical: 12),
                       ),
                     ),
                   ],
@@ -306,18 +306,18 @@ class HomeScreen extends ConsumerWidget {
                   );
                 },
                 loading: () => const Center(child: CircularProgressIndicator()),
-                error: (e, _) => Card(
+                error: (e, _) => const Card(
                   child: Padding(
-                    padding: const EdgeInsets.all(24),
+                    padding: EdgeInsets.all(24),
                     child: Column(
                       children: [
-                        const Icon(
+                        Icon(
                           Icons.error_outline,
                           size: 48,
                           color: Colors.red,
                         ),
-                        const SizedBox(height: 16),
-                        const Text('Failed to load recent activity'),
+                        SizedBox(height: 16),
+                        Text('Failed to load recent activity'),
                       ],
                     ),
                   ),
@@ -361,7 +361,9 @@ class HomeScreen extends ConsumerWidget {
                     onPressed: () {
                       // Mark all as read
                       for (final notification in notifications) {
-                        ref.read(notificationsProvider.notifier).markAsRead(notification.id);
+                        ref
+                            .read(notificationsProvider.notifier)
+                            .markAsRead(notification.id);
                       }
                       Navigator.of(context).pop();
                     },
@@ -383,10 +385,14 @@ class HomeScreen extends ConsumerWidget {
                     margin: const EdgeInsets.only(bottom: 12),
                     padding: const EdgeInsets.all(16),
                     decoration: BoxDecoration(
-                      color: notification.isRead ? Colors.grey.shade100 : Colors.blue.shade50,
+                      color: notification.isRead
+                          ? Colors.grey.shade100
+                          : Colors.blue.shade50,
                       borderRadius: BorderRadius.circular(12),
                       border: Border.all(
-                        color: notification.isRead ? Colors.grey.shade300 : Colors.blue.shade200,
+                        color: notification.isRead
+                            ? Colors.grey.shade300
+                            : Colors.blue.shade200,
                       ),
                     ),
                     child: Row(
@@ -394,7 +400,8 @@ class HomeScreen extends ConsumerWidget {
                       children: [
                         Icon(
                           _getNotificationIcon(notification.type),
-                          color: notification.isRead ? Colors.grey : Colors.blue,
+                          color:
+                              notification.isRead ? Colors.grey : Colors.blue,
                         ),
                         const SizedBox(width: 12),
                         Expanded(
@@ -404,7 +411,9 @@ class HomeScreen extends ConsumerWidget {
                               Text(
                                 notification.title,
                                 style: TextStyle(
-                                  fontWeight: notification.isRead ? FontWeight.normal : FontWeight.bold,
+                                  fontWeight: notification.isRead
+                                      ? FontWeight.normal
+                                      : FontWeight.bold,
                                   fontSize: 16,
                                 ),
                               ),
@@ -431,7 +440,9 @@ class HomeScreen extends ConsumerWidget {
                           IconButton(
                             icon: const Icon(Icons.circle, size: 8),
                             onPressed: () {
-                              ref.read(notificationsProvider.notifier).markAsRead(notification.id);
+                              ref
+                                  .read(notificationsProvider.notifier)
+                                  .markAsRead(notification.id);
                             },
                             color: Colors.blue,
                           ),
@@ -474,7 +485,8 @@ class HomeScreen extends ConsumerWidget {
     }
   }
 
-  Widget _buildStatCard(String title, String value, IconData icon, Color color) {
+  Widget _buildStatCard(
+      String title, String value, IconData icon, Color color) {
     return Card(
       elevation: 2,
       shape: RoundedRectangleBorder(
@@ -509,8 +521,8 @@ class HomeScreen extends ConsumerWidget {
     );
   }
 
-  Widget _buildActionCard(
-      String title, String subtitle, IconData icon, Color color, VoidCallback onTap) {
+  Widget _buildActionCard(String title, String subtitle, IconData icon,
+      Color color, VoidCallback onTap) {
     return Card(
       elevation: 2,
       shape: RoundedRectangleBorder(
@@ -537,6 +549,8 @@ class HomeScreen extends ConsumerWidget {
                   fontWeight: FontWeight.w600,
                 ),
                 textAlign: TextAlign.center,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
               ),
               const SizedBox(height: 4),
               Text(
@@ -546,6 +560,8 @@ class HomeScreen extends ConsumerWidget {
                   color: Colors.grey,
                 ),
                 textAlign: TextAlign.center,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
               ),
             ],
           ),

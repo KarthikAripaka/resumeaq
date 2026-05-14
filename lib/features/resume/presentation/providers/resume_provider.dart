@@ -1,13 +1,14 @@
+import 'dart:io';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:interview_iq_ai/core/services/pdf_parser_service.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
-import 'package:shared_preferences/shared_preferences.dart';
+
 import 'dart:convert';
 import '../../../../core/constants/app_constants.dart';
 import '../../../../core/providers/service_providers.dart';
 import '../../../../core/services/local_storage_service.dart';
-import '../../../../core/services/ai_cache.dart';
 import '../../domain/models/resume_analysis.dart';
 
 part 'resume_provider.g.dart';
@@ -19,20 +20,8 @@ final currentAnalysisProvider = StateProvider<ResumeAnalysis?>((ref) => null);
 class ResumeNotifier extends _$ResumeNotifier {
   @override
   FutureOr<ResumeAnalysis?> build() async {
-    // Try to load last analysis from shared preferences
-    final prefs = await SharedPreferences.getInstance();
-    final analysisJson = prefs.getString('last_resume_analysis');
-    if (analysisJson != null) {
-      try {
-        final analysisMap = jsonDecode(analysisJson) as Map<String, dynamic>;
-        final analysis = ResumeAnalysis.fromJson(analysisMap);
-        // Update the global provider
-        Future.microtask(() => ref.read(currentAnalysisProvider.notifier).state = analysis);
-        return analysis;
-      } catch (e) {
-        debugPrint('Failed to load cached analysis: $e');
-      }
-    }
+    // Offline-friendly: do not use SharedPreferences.
+    // AICache (Hive) is used for resume analysis caching.
     return null;
   }
 
@@ -59,6 +48,7 @@ class ResumeNotifier extends _$ResumeNotifier {
     if (state.isLoading) return;
 
     state = const AsyncValue.loading();
+    debugPrint('Starting resume analysis for $jobRole');
 
     try {
       final analysis = await Future.any([
@@ -69,14 +59,12 @@ class ResumeNotifier extends _$ResumeNotifier {
       ]);
 
       state = AsyncValue.data(analysis);
-
-      // Save to shared preferences for persistence
-      final prefs = await SharedPreferences.getInstance();
-      await prefs.setString('last_resume_analysis', jsonEncode(analysis.toJson()));
+      debugPrint('Analysis completed successfully');
 
       // Update global provider
       ref.read(currentAnalysisProvider.notifier).state = analysis;
     } catch (error, stackTrace) {
+      debugPrint('Analysis failed: $error');
       final userFriendlyError = _getUserFriendlyErrorMessage(error);
       state = AsyncValue.error(userFriendlyError, stackTrace);
     }
@@ -86,13 +74,23 @@ class ResumeNotifier extends _$ResumeNotifier {
     PlatformFile pdfFile,
     String jobRole,
   ) async {
-    final pdfService = ref.read(pdfParserServiceProvider);
-    final bytes = pdfFile.bytes;
-    if (bytes == null) {
-      throw Exception('PDF bytes are missing. Please try again.');
+    var bytes = pdfFile.bytes;
+
+    // If bytes are null, try to read from path
+    if (bytes == null && pdfFile.path != null) {
+      debugPrint('PDF bytes null, reading from path: ${pdfFile.path}');
+      final file = File(pdfFile.path!);
+      bytes = await file.readAsBytes();
     }
 
-    final resumeText = await pdfService.extractTextFromBytes(bytes);
+    if (bytes == null || bytes.isEmpty) {
+      throw Exception('Unable to read PDF file. Please try again.');
+    }
+
+    debugPrint('Extracting text from PDF...');
+    final resumeText = await compute(_extractTextIsolate, [bytes]);
+
+    debugPrint('Extracted text length: ${resumeText.length}');
 
     // Save resume locally for offline access
     LocalStorageService.saveResumeLocally(bytes, pdfFile.name);
@@ -104,6 +102,11 @@ class ResumeNotifier extends _$ResumeNotifier {
 
     debugPrint('AI analysis completed successfully');
     return analysis;
+  }
+
+  static Future<String> _extractTextIsolate(List<dynamic> args) async {
+    final bytes = args[0] as List<int>;
+    return PdfParserService.extractTextFromBytes(bytes);
   }
 
   void clearAnalysis() {

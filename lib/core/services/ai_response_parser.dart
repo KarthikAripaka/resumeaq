@@ -1,6 +1,18 @@
 import 'dart:convert';
 import '../../features/resume/domain/models/resume_analysis.dart';
 
+ResumeAnalysis parseResumeAnalysisIsolate(List<dynamic> args) {
+  return AIResponseParser.parseResumeAnalysis(args[0], args[1], args[2]);
+}
+
+List<Map<String, dynamic>> parseInterviewQuestionsIsolate(String rawResponse) {
+  return AIResponseParser.parseInterviewQuestions(rawResponse);
+}
+
+Map<String, dynamic> parseAnswerFeedbackIsolate(String rawResponse) {
+  return AIResponseParser.parseAnswerFeedback(rawResponse);
+}
+
 class AIResponseParser {
   /// Safely parse AI response into ResumeAnalysis
   static ResumeAnalysis parseResumeAnalysis(

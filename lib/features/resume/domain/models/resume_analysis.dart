@@ -32,8 +32,36 @@ class ResumeAnalysis {
     required this.analyzedAt,
   });
 
-  factory ResumeAnalysis.fromJson(Map<String, dynamic> json) =>
-      _$ResumeAnalysisFromJson(json);
+  factory ResumeAnalysis.fromJson(Map<String, dynamic> json) {
+    return ResumeAnalysis(
+      atsScore: (json['ats_score'] ?? 0) as int,
+      strengths: (json['strengths'] as List<dynamic>?)
+              ?.map((e) => e.toString())
+              .toList() ??
+          const [],
+      weaknesses: (json['weaknesses'] as List<dynamic>?)
+              ?.map((e) => e.toString())
+              .toList() ??
+          const [],
+      missingSkills: (json['missing_skills'] as List<dynamic>?)
+              ?.map((e) => e.toString())
+              .toList() ??
+          const [],
+      keywordMatch: (json['keyword_match'] as List<dynamic>?)
+              ?.map((e) => e.toString())
+              .toList() ??
+          const [],
+      improvementTips: (json['improvement_tips'] as List<dynamic>?)
+              ?.map((e) => e.toString())
+              .toList() ??
+          const [],
+      summary: json['summary'] ?? '',
+      jobRole: json['job_role'] ?? '',
+      analyzedAt: json['analyzed_at'] != null
+          ? DateTime.parse(json['analyzed_at'])
+          : DateTime.now(),
+    );
+  }
 
   Map<String, dynamic> toJson() => _$ResumeAnalysisToJson(this);
 }

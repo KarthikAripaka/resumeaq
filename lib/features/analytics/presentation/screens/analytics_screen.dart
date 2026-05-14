@@ -131,12 +131,13 @@ class AnalyticsScreen extends ConsumerWidget {
                     // Create sample trend data (in real app, this would be from actual resume analyses)
                     final spots = <FlSpot>[];
                     for (int i = 0; i < sessions.length && i < 10; i++) {
-                      spots.add(FlSpot(i.toDouble(), 65 + (i * 2.0) + (i % 3) * 5));
+                      spots.add(
+                          FlSpot(i.toDouble(), 65 + (i * 2.0) + (i % 3) * 5));
                     }
 
                     return LineChart(
                       LineChartData(
-                        gridData: FlGridData(show: false),
+                        gridData: const FlGridData(show: false),
                         titlesData: FlTitlesData(
                           bottomTitles: AxisTitles(
                             sideTitles: SideTitles(
@@ -163,8 +164,10 @@ class AnalyticsScreen extends ConsumerWidget {
                               },
                             ),
                           ),
-                          topTitles: AxisTitles(sideTitles: SideTitles(showTitles: false)),
-                          rightTitles: AxisTitles(sideTitles: SideTitles(showTitles: false)),
+                          topTitles: const AxisTitles(
+                              sideTitles: SideTitles(showTitles: false)),
+                          rightTitles: const AxisTitles(
+                              sideTitles: SideTitles(showTitles: false)),
                         ),
                         borderData: FlBorderData(show: false),
                         lineBarsData: [
@@ -193,8 +196,10 @@ class AnalyticsScreen extends ConsumerWidget {
                       ),
                     );
                   },
-                  loading: () => const Center(child: CircularProgressIndicator()),
-                  error: (e, _) => const Center(child: Text('Failed to load chart data')),
+                  loading: () =>
+                      const Center(child: CircularProgressIndicator()),
+                  error: (e, _) =>
+                      const Center(child: Text('Failed to load chart data')),
                 ),
               ),
 
@@ -231,7 +236,13 @@ class AnalyticsScreen extends ConsumerWidget {
                     ticksTextStyle: const TextStyle(fontSize: 10),
                     titleTextStyle: const TextStyle(fontSize: 12),
                     getTitle: (index, angle) {
-                      const titles = ['Technical', 'Communication', 'Problem Solving', 'Leadership', 'Domain Knowledge'];
+                      const titles = [
+                        'Technical',
+                        'Communication',
+                        'Problem Solving',
+                        'Leadership',
+                        'Domain Knowledge'
+                      ];
                       return RadarChartTitle(text: titles[index]);
                     },
                     dataSets: [
@@ -299,7 +310,10 @@ class AnalyticsScreen extends ConsumerWidget {
                     itemBuilder: (context, index) {
                       final session = sessions[index];
                       final avgScore = session.feedbacks.isNotEmpty
-                          ? session.feedbacks.values.map((f) => f.score).reduce((a, b) => a + b) / session.feedbacks.length
+                          ? session.feedbacks.values
+                                  .map((f) => f.score)
+                                  .reduce((a, b) => a + b) /
+                              session.feedbacks.length
                           : 0.0;
 
                       return Card(
@@ -324,7 +338,8 @@ class AnalyticsScreen extends ConsumerWidget {
                                   const SizedBox(width: 12),
                                   Expanded(
                                     child: Column(
-                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
                                       children: [
                                         Text(
                                           '${session.jobRole} Interview',
@@ -334,7 +349,9 @@ class AnalyticsScreen extends ConsumerWidget {
                                           ),
                                         ),
                                         Text(
-                                          session.startedAt.toString().split('.')[0],
+                                          session.startedAt
+                                              .toString()
+                                              .split('.')[0],
                                           style: const TextStyle(
                                             fontSize: 12,
                                             color: Colors.grey,
@@ -344,9 +361,12 @@ class AnalyticsScreen extends ConsumerWidget {
                                     ),
                                   ),
                                   Container(
-                                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                                    padding: const EdgeInsets.symmetric(
+                                        horizontal: 8, vertical: 4),
                                     decoration: BoxDecoration(
-                                      color: avgScore >= 7 ? Colors.green.shade100 : Colors.orange.shade100,
+                                      color: avgScore >= 7
+                                          ? Colors.green.shade100
+                                          : Colors.orange.shade100,
                                       borderRadius: BorderRadius.circular(12),
                                     ),
                                     child: Text(
@@ -354,7 +374,9 @@ class AnalyticsScreen extends ConsumerWidget {
                                       style: TextStyle(
                                         fontSize: 12,
                                         fontWeight: FontWeight.w600,
-                                        color: avgScore >= 7 ? Colors.green.shade700 : Colors.orange.shade700,
+                                        color: avgScore >= 7
+                                            ? Colors.green.shade700
+                                            : Colors.orange.shade700,
                                       ),
                                     ),
                                   ),
@@ -388,18 +410,18 @@ class AnalyticsScreen extends ConsumerWidget {
                   );
                 },
                 loading: () => const Center(child: CircularProgressIndicator()),
-                error: (e, _) => Card(
+                error: (e, _) => const Card(
                   child: Padding(
-                    padding: const EdgeInsets.all(32),
+                    padding: EdgeInsets.all(32),
                     child: Column(
                       children: [
-                        const Icon(
+                        Icon(
                           Icons.error_outline,
                           size: 48,
                           color: Colors.red,
                         ),
-                        const SizedBox(height: 16),
-                        const Text('Failed to load interview history'),
+                        SizedBox(height: 16),
+                        Text('Failed to load interview history'),
                       ],
                     ),
                   ),
@@ -414,7 +436,8 @@ class AnalyticsScreen extends ConsumerWidget {
     );
   }
 
-  Widget _buildStatCard(String title, String value, IconData icon, Color color, String subtitle) {
+  Widget _buildStatCard(
+      String title, String value, IconData icon, Color color, String subtitle) {
     return Expanded(
       child: Container(
         padding: const EdgeInsets.all(20),

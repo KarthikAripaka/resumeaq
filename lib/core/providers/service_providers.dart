@@ -1,17 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../services/groq_service.dart';
-import '../services/supabase_service.dart';
+
 import '../services/pdf_parser_service.dart';
 
 final groqServiceProvider = Provider<GroqService>((ref) => GroqService());
 
-final supabaseServiceProvider = Provider<SupabaseService>((ref) => SupabaseService());
-
-final pdfParserServiceProvider = Provider<PdfParserService>((ref) => PdfParserService());
+final pdfParserServiceProvider =
+    Provider<PdfParserService>((ref) => PdfParserService());
 
 // Theme provider for managing app theme
-final themeModeProvider = StateNotifierProvider<ThemeModeNotifier, ThemeMode>((ref) {
+final themeModeProvider =
+    StateNotifierProvider<ThemeModeNotifier, ThemeMode>((ref) {
   return ThemeModeNotifier();
 });
 
@@ -38,7 +38,8 @@ class ThemeModeNotifier extends StateNotifier<ThemeMode> {
 }
 
 // Notifications provider
-final notificationsProvider = StateNotifierProvider<NotificationsNotifier, List<NotificationItem>>((ref) {
+final notificationsProvider =
+    StateNotifierProvider<NotificationsNotifier, List<NotificationItem>>((ref) {
   return NotificationsNotifier();
 });
 

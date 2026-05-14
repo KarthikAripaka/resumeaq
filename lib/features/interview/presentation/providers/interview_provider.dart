@@ -1,9 +1,10 @@
 import 'package:flutter/foundation.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:uuid/uuid.dart';
 import '../../../../core/providers/service_providers.dart';
+import '../../../../core/local_interview_storage.dart';
 import '../../domain/models/interview_models.dart';
+
 import '../../../resume/domain/models/resume_analysis.dart';
 
 part 'interview_provider.g.dart';
@@ -66,6 +67,8 @@ class InterviewNotifier extends _$InterviewNotifier {
       questions: questions,
       feedbacks: {},
       startedAt: DateTime.now(),
+      answersByQuestionId: const {},
+      finalReport: null,
     );
   }
 
@@ -73,66 +76,63 @@ class InterviewNotifier extends _$InterviewNotifier {
     final currentSession = state.value;
     if (currentSession == null) return;
 
-    // Use empty string as fallback if answer is null
+    // Store raw answers in-memory only for now.
+    // Final evaluation will happen once user finishes the interview.
     final safeAnswer = answer ?? '';
 
-    state = await AsyncValue.guard(() async {
-      final groqService = ref.read(groqServiceProvider);
+    final updatedAnswers =
+        Map<String, String>.from(currentSession.answersByQuestionId);
+    updatedAnswers[questionId] = safeAnswer;
 
-      final question = currentSession.questions.firstWhere(
-        (q) => q.id == questionId,
-      );
-
-      final feedback = await groqService.evaluateAnswer(
-        question.question,
-        safeAnswer,
-        _jobRole ?? 'Unknown',
-      );
-
-      final updatedFeedbacks =
-          Map<String, AnswerFeedback>.from(currentSession.feedbacks);
-      updatedFeedbacks[questionId] = feedback;
-
-      final updatedSession = InterviewSession(
+    state = AsyncValue.data(
+      InterviewSession(
         id: currentSession.id,
         resumeId: currentSession.resumeId,
         jobRole: currentSession.jobRole,
         questions: currentSession.questions,
-        feedbacks: updatedFeedbacks,
+        feedbacks: currentSession.feedbacks,
         startedAt: currentSession.startedAt,
-      );
-
-      // Best-effort persistence
-      try {
-        final supabaseService = ref.read(supabaseServiceProvider);
-        await supabaseService.saveQuestionResponse(
-          currentSession.id,
-          question,
-          feedback,
-        );
-      } catch (_) {
-        // ignore persistence errors
-      }
-
-      return updatedSession;
-    });
+        answersByQuestionId: updatedAnswers,
+        finalReport: currentSession.finalReport,
+      ),
+    );
   }
 
-  Future<void> endSession() async {
+  Future<InterviewFinalReport> finishInterview() async {
     final currentSession = state.value;
-    if (currentSession == null) return;
-
-    try {
-      final supabaseService = ref.read(supabaseServiceProvider);
-      await supabaseService.saveInterviewSession(currentSession);
-
-      // Session is saved, analytics will load it via the provider
-    } catch (e) {
-      debugPrint('Error ending session: $e');
-      // ignore persistence errors but still update local state
+    if (currentSession == null) {
+      throw Exception('No active interview session');
     }
 
-    state = const AsyncValue.data(null);
+    final groqService = ref.read(groqServiceProvider);
+
+    // Evaluate once with all Qs + answers.
+    final report = await groqService.evaluateInterviewFinal(
+      jobRole: currentSession.jobRole,
+      questions: currentSession.questions,
+      answersByQuestionId: currentSession.answersByQuestionId,
+    );
+
+    final updated = InterviewSession(
+      id: currentSession.id,
+      resumeId: currentSession.resumeId,
+      jobRole: currentSession.jobRole,
+      questions: currentSession.questions,
+      feedbacks: currentSession.feedbacks,
+      startedAt: currentSession.startedAt,
+      answersByQuestionId: currentSession.answersByQuestionId,
+      finalReport: report,
+    );
+
+    state = AsyncValue.data(updated);
+
+    try {
+      await LocalInterviewStorage.saveSession(updated);
+    } catch (e) {
+      debugPrint('Local save failed: $e');
+    }
+
+    return report;
   }
 }
 

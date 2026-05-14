@@ -32,17 +32,18 @@ class _UploadScreenState extends ConsumerState<UploadScreen> {
         if (error.contains('Rate limit')) {
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(
-              content: Text('Rate limit reached, please wait before retrying...'),
+              content:
+                  Text('Rate limit reached, please wait before retrying...'),
               duration: Duration(seconds: 5),
             ),
           );
         } else {
           // Show a user-friendly message for any other errors
           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: const Text('Analysis completed with local processing'),
+            const SnackBar(
+              content: Text('Analysis completed with local processing'),
               backgroundColor: Colors.green,
-              duration: const Duration(seconds: 2),
+              duration: Duration(seconds: 2),
             ),
           );
           // Still navigate to analysis if we have a result
@@ -78,7 +79,8 @@ class _UploadScreenState extends ConsumerState<UploadScreen> {
                 ),
                 child: Center(
                   child: _selectedFile != null
-                      ? Text('${_selectedFile!.name} (${_selectedFile!.size} bytes)')
+                      ? Text(
+                          '${_selectedFile!.name} (${_selectedFile!.size} bytes)')
                       : const Text('Drop PDF here or tap to select'),
                 ),
               ),
@@ -106,7 +108,9 @@ class _UploadScreenState extends ConsumerState<UploadScreen> {
               ),
             ] else
               ElevatedButton(
-                onPressed: _selectedFile != null && !resumeState.isLoading ? _analyze : null,
+                onPressed: _selectedFile != null && !resumeState.isLoading
+                    ? _analyze
+                    : null,
                 child: const Text('Analyze Resume'),
               ),
             const SizedBox(height: 16),
@@ -127,7 +131,7 @@ class _UploadScreenState extends ConsumerState<UploadScreen> {
 
   void _pickFile() async {
     final result = await FilePicker.platform
-        .pickFiles(type: FileType.custom, allowedExtensions: ['pdf']);
+        .pickFiles(type: FileType.custom, allowedExtensions: ['pdf'], withData: true);
     if (result != null && mounted) {
       setState(() => _selectedFile = result.files.single);
     }
